@@ -1,8 +1,11 @@
 from djitellopy import Tello
 
+import time
+
+from services.tello_connector import TelloConnector
 
 # Create a Tello instance
-tello = Tello()
+tello = TelloConnector(Tello())
 
 # Connect to Tello
 tello.connect()
@@ -39,7 +42,7 @@ print("Acceleration X:", tello.get_acceleration_x(), "cm/s²")
 print("Acceleration Y:", tello.get_acceleration_y(), "cm/s²")
 print("Acceleration Z:", tello.get_acceleration_z(), "cm/s²")
 
-print("Serial number:", tello.query_serial_number())
+# print("Serial number:", tello.query_serial_number())
 
 print("Pitch", tello.get_pitch(), "degrees")
 

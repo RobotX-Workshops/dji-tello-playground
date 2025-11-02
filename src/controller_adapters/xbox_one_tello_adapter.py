@@ -6,21 +6,20 @@ parent_dir = os.path.join(script_dir, "..")
 sys.path.append(parent_dir)
 
 from typing import List
-
-from joysticks.tectinter_controller_windows import TectInterJoystick
-
+from joysticks.pygame_connector import PyGameConnector
+from joysticks.xbox_one_controller import XboxOnePyGameController
 from services.tello_controller import (
     TelloActionType,
     TelloControlState,
     TelloController,
 )
-from joysticks.pygame_connector import PyGameConnector
-from test_utils import run_adapter_test
+
+from .utils import run_adapter_test
 
 
-class TectInterJoystickControlAdapter(TelloController):
+class XboxOneTelloControlAdapter(TelloController):
 
-    def __init__(self, controller: TectInterJoystick):
+    def __init__(self, controller: XboxOnePyGameController):
         self.xbox_controller = controller
 
     def t(self, controller_axis_value: float) -> int:
@@ -68,6 +67,6 @@ class TectInterJoystickControlAdapter(TelloController):
 
 if __name__ == "__main__":
     pygame_connector = PyGameConnector()
-    controller = TectInterJoystick(pygame_connector)
-    tello_control = TectInterJoystickControlAdapter(controller)
+    controller = XboxOnePyGameController(pygame_connector)
+    tello_control = XboxOneTelloControlAdapter(controller)
     run_adapter_test(tello_control)

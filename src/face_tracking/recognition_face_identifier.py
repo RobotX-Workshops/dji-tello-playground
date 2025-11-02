@@ -1,5 +1,5 @@
 from typing import Literal, Sequence
-import face_recognition  # type ignore
+import face_recognition  # type: ignore
 
 import cv2
 

@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Any, Dict, Literal, Union
 from djitellopy import Tello, BackgroundFrameRead
 
 LOGGER = logging.getLogger(__name__)
@@ -7,21 +8,7 @@ LOGGER = logging.getLogger(__name__)
 
 class TelloConnector:
     """
-    A class that provides a high-level interface for controlling the Tello drone.
-
-    Attributes:
-        tello: An instance of the Tello class for low-level communication with the drone.
-
-    Methods:
-        connect: Establishes a connection with the Tello drone.
-        set_speed: Sets the speed of the Tello drone.
-        streamoff: Stops the video stream from the Tello drone.
-        streamon: Starts the video stream from the Tello drone.
-        get_frame_read: Returns an instance of BackgroundFrameRead for reading frames from the video stream.
-        takeoff: Initiates the takeoff sequence of the Tello drone.
-        land: Initiates the landing sequence of the Tello drone.
-        send_rc_control: Sends RC control commands to the Tello drone for manual control.
-        end: Closes the connection with the Tello drone.
+    A wrapper class around the Tello SDK that provides a interface for controlling the Tello drone.
     """
 
     def __init__(self, tello: Tello):
@@ -102,3 +89,67 @@ class TelloConnector:
 
     def flip_right(self) -> None:
         self.tello.flip_right()
+
+    def get_battery(self) -> int:
+        return self.tello.get_battery()
+    
+    @property
+    def address(self) -> tuple[str, Literal[8889]]:
+        return self.tello.address
+
+    def get_barometer(self) -> int:
+        return self.tello.get_barometer()
+    
+    def get_distance_tof(self) -> int:
+        return self.tello.get_distance_tof()
+    
+    def get_height(self) -> int:
+        return self.tello.get_height()
+    
+    def get_flight_time(self) -> int:
+        return self.tello.get_flight_time()
+    
+    def get_speed_x(self) -> int:
+        return self.tello.get_speed_x()
+    
+    def get_speed_y(self) -> int:
+        return self.tello.get_speed_y()
+    
+    def get_speed_z(self) -> int:
+        return self.tello.get_speed_z()
+    
+    def get_acceleration_x(self) -> float:
+        return self.tello.get_acceleration_x()
+    
+    def get_acceleration_y(self) -> float:
+        return self.tello.get_acceleration_y()
+    
+    def get_acceleration_z(self) -> float:
+        return self.tello.get_acceleration_z()
+    
+    def query_serial_number(self) -> str:
+        return self.tello.query_serial_number()
+
+    def get_pitch(self) -> int:
+        return self.tello.get_pitch()
+
+    def get_roll(self) -> int:
+        return self.tello.get_roll()
+
+    def get_yaw(self) -> int:
+        return self.tello.get_yaw()
+
+    def query_attitude(self) -> Dict[str, Union[int, float, str]]:
+        return self.tello.query_attitude()
+
+    def get_lowest_temperature(self) -> int:
+        return self.tello.get_lowest_temperature()
+
+    def get_highest_temperature(self) -> int:   
+        return self.tello.get_highest_temperature()
+
+    def get_temperature(self) -> float:
+        return self.tello.get_temperature()
+
+    def get_current_state(self) -> Dict[Any, Any]:
+        return self.tello.get_current_state()

@@ -11,22 +11,22 @@ try:
     from joysticks.gc102_controller_windows import WindowsGC102PyGameJoystick
     from joysticks.pygame_connector import PyGameConnector
     from joysticks.game_controller import (
-        Controller,
-        ControllerState,
+        GameController,
+        GameControllerState,
     )
 except ModuleNotFoundError:
     from gc102_controller_windows import WindowsGC102PyGameJoystick
     from pygame_connector import PyGameConnector
     from game_controller import (
-        Controller,
-        ControllerState,
+        GameController,
+        GameControllerState,
     )
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class GC102PyGameController(Controller):
+class GC102PyGameController(GameController):
     """
     The controller works on two main principles
         - That the axes act like a stream of data and are constant
@@ -34,7 +34,7 @@ class GC102PyGameController(Controller):
             The release of the button is not acknowledged directly but can be inferred
     """
 
-    platform_controller: Controller
+    platform_controller: GameController
 
     def __init__(self, pygame_connector: PyGameConnector, joystick_id: int = 0):
 
@@ -47,7 +47,7 @@ class GC102PyGameController(Controller):
                 f"Unknown platform {sys.platform}. Cannot create GC102PyGameJoystick"
             )
 
-    def get_state(self) -> ControllerState:
+    def get_state(self) -> GameControllerState:
         return self.platform_controller.get_state()
 
 

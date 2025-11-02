@@ -21,20 +21,20 @@ from enum import Enum
 try:
     from joysticks.pygame_connector import PyGameConnector
     from joysticks.game_controller import (
-        Controller,
+        GameController,
         ControllerAxesState,
         ControllerDPadState,
-        ControllerState,
+        GameControllerState,
         StickState,
         ControllerButtonPressedState,
     )
 except ModuleNotFoundError:
     from pygame_connector import PyGameConnector
     from game_controller import (
-        Controller,
+        GameController,
         ControllerAxesState,
         ControllerDPadState,
-        ControllerState,
+        GameControllerState,
         StickState,
         ControllerButtonPressedState,
     )
@@ -89,7 +89,7 @@ class _ButtonPressedState(ControllerButtonPressedState):
         return [field.name for field in fields(self) if getattr(self, field.name)]
 
 
-class LinuxXboxOnePyGameJoystick(Controller):
+class LinuxXboxOnePyGameJoystick(GameController):
     """
     The controller works on two main principles
         - That the axes act like a stream of data and are constant
@@ -129,7 +129,7 @@ class LinuxXboxOnePyGameJoystick(Controller):
             except Exception as e:
                 LOGGER.error(f"Error when trying to match button {i}", e)
 
-    def get_state(self) -> ControllerState:
+    def get_state(self) -> GameControllerState:
         self.pygame_connector.get_events()
 
         left_stick_horizontal = self.joystick.get_axis(
@@ -212,7 +212,7 @@ class LinuxXboxOnePyGameJoystick(Controller):
                 f"Pressed Buttons: {[button.name for button in pressed_buttons]}"
             )
 
-        return ControllerState(axes=axes, buttons=buttons, d_pad=d_pad_state)
+        return GameControllerState(axes=axes, buttons=buttons, d_pad=d_pad_state)
 
 
 if __name__ == "__main__":

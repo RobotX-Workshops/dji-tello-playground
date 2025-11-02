@@ -1,6 +1,7 @@
 """
-This Module is used to mock tracking a face in the frame and follow it with the drone.
-It outputs the controller outputs but does not dispatch them to a drone
+This script is used to mock tracking a face in the frame and follow it with the drone.
+Instead of the drones camera it uses the hosts computer camera to test functionality.
+It prints the facetracking controller outputs but does not dispatch them to a drone
 """
 
 import time
@@ -17,7 +18,7 @@ from face_tracking.utils.positioning_utils import (
     get_frame_center_xy,
     get_vector_xyz,
 )
-from follow_face_controller import FaceFollowingController
+from src.controller_adapters.follow_face_controller import FaceFollowingController
 
 
 args = argparse.ArgumentParser()

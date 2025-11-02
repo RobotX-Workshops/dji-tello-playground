@@ -6,28 +6,28 @@ parent_dir = os.path.join(script_dir, "..")
 sys.path.append(parent_dir)
 
 from typing import List
-
-from joysticks.gc102_controller import GC102PyGameController
 from joysticks.pygame_connector import PyGameConnector
+from joysticks.xbox_controller import XboxPyGameController
+
 from services.tello_controller import (
     TelloActionType,
     TelloControlState,
     TelloController,
 )
-from test_utils import run_adapter_test
+from .utils import run_adapter_test
 
 
-class GC102TelloControlAdapter(TelloController):
+class XboxTelloControlAdapter(TelloController):
 
-    def __init__(self, controller: GC102PyGameController):
-        self.gc102_controller = controller
+    def __init__(self, controller: XboxPyGameController):
+        self.xbox_controller = controller
 
     def t(self, controller_axis_value: float) -> int:
         "Transform the controller axis value to the tello control value"
         return int(controller_axis_value * 100)
 
     def get_state(self) -> TelloControlState:
-        controller_state = self.gc102_controller.get_state()
+        controller_state = self.xbox_controller.get_state()
 
         pressed_buttons = controller_state.buttons.get_pressed_buttons()
         d_pad = controller_state.d_pad
@@ -67,6 +67,6 @@ class GC102TelloControlAdapter(TelloController):
 
 if __name__ == "__main__":
     pygame_connector = PyGameConnector()
-    controller = GC102PyGameController(pygame_connector)
-    tello_control = GC102TelloControlAdapter(controller)
+    controller = XboxPyGameController(pygame_connector)
+    tello_control = XboxTelloControlAdapter(controller)
     run_adapter_test(tello_control)

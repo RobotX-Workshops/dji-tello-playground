@@ -1,0 +1,112 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" version="26.0.14">
+  <diagram name="Page-1" id="zDy4hOGWnjvEG5H6q4pG">
+    <mxGraphModel dx="2193" dy="748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-1" target="Uz0o-T_YmsZEBRaml5mM-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-8" value="DI" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Uz0o-T_YmsZEBRaml5mM-7">
+          <mxGeometry x="0.1095" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="590" y="295" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-1" value="Tello SDK" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="380" y="265" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-2" target="Uz0o-T_YmsZEBRaml5mM-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-10" value="DI" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Uz0o-T_YmsZEBRaml5mM-9">
+          <mxGeometry x="-0.0429" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-2" value="Tello Connector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="380" y="385" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.259;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-4" target="Uz0o-T_YmsZEBRaml5mM-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-4" target="Uz0o-T_YmsZEBRaml5mM-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-4" value="Tello Dispatcher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="380" y="505" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.198;entryY=0.539;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-2" target="Uz0o-T_YmsZEBRaml5mM-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-3" value="Just a wrapper&amp;nbsp;&lt;div&gt;class for the SDK&lt;/div&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="540" y="355" width="250" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-6" value="The imported Tello SDK" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="540" y="240" width="250" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-5" value="Takes controller&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;states&lt;/span&gt;&lt;div&gt;&lt;div&gt;and&amp;nbsp;&lt;/div&gt;&lt;div&gt;dispatches them to the drone&lt;/div&gt;&lt;/div&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="480" width="270" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.503;entryY=1.073;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-15" target="Uz0o-T_YmsZEBRaml5mM-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-15" value="Pygame Connector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="-130" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-18" target="Uz0o-T_YmsZEBRaml5mM-19">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-70" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-17" value="Outputs State" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Uz0o-T_YmsZEBRaml5mM-16">
+          <mxGeometry x="-0.1435" y="2" relative="1" as="geometry">
+            <mxPoint x="-4" y="-48" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-18" value="Game Controller Tello Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="-160" y="360" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-19" target="Uz0o-T_YmsZEBRaml5mM-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-19" value="TelloControlState" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="100" y="505" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-21" target="Uz0o-T_YmsZEBRaml5mM-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-21" value="Game Controller" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="-160" y="240" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Uz0o-T_YmsZEBRaml5mM-23" target="Uz0o-T_YmsZEBRaml5mM-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-23" value="Pygame" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="-130" y="40" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-24" value="A wrapper&amp;nbsp;&lt;div&gt;around pygame&lt;/div&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="130" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-25" value="The Base Pygame SDK" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="30" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-26" value="A game controller&lt;br&gt;Implementation that outputs&lt;div&gt;a Standard Gamepad state&lt;/div&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="232.5" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-27" value="Maps the game controller state to a&amp;nbsp;&lt;span style=&quot;color: rgb(38, 127, 153); background-color: rgb(255, 255, 255); font-family: Menlo, Monaco, &amp;quot;Courier New&amp;quot;, monospace; white-space: pre;&quot;&gt;TelloControlState&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&amp;nbsp;that can be used by a dispatcher&lt;/span&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;spacingTop=4;spacingLeft=55;spacingRight=55;" vertex="1" parent="1">
+          <mxGeometry x="20" y="330" width="300" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="Uz0o-T_YmsZEBRaml5mM-29" value="Tello Drone" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="380" y="628" width="120" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -3,6 +3,7 @@ from djitellopy import Tello
 import time
 
 ROTATION_DEGREES = 90
+HIGHT_CM = 10 
 
 # Create a Tello instance
 tello = Tello()
@@ -37,7 +38,7 @@ def warn_of_flip(direction: str):
 print("Take off")
 tello.takeoff()
 
-tello.move_up(100)
+tello.move_up(HIGHT_CM)
 
 warn_of_flip("left")
 

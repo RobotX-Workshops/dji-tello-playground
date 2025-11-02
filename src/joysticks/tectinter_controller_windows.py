@@ -16,7 +16,7 @@ try:
     from joysticks.game_controller import (
         ControllerAxesState,
         ControllerDPadState,
-        ControllerState,
+        GameControllerState,
         StickState,
         ControllerButtonPressedState,
     )
@@ -25,7 +25,7 @@ except ModuleNotFoundError:
     from game_controller import (
         ControllerAxesState,
         ControllerDPadState,
-        ControllerState,
+        GameControllerState,
         StickState,
         ControllerButtonPressedState,
     )
@@ -115,7 +115,7 @@ class TectInterJoystick:
         for i in range(num_buttons):
             self.button_ids[i] = _ButtonKeys(i)
 
-    def get_state(self) -> ControllerState:
+    def get_state(self) -> GameControllerState:
         self.pygame_connector.get_events()
 
         left_stick_horizontal = self.joystick.get_axis(
@@ -195,7 +195,7 @@ class TectInterJoystick:
                 f"Pressed Buttons: {[button.name for button in pressed_buttons]}"
             )
 
-        return ControllerState(axes=axes, buttons=buttons, d_pad=d_pad_state)
+        return GameControllerState(axes=axes, buttons=buttons, d_pad=d_pad_state)
 
 
 if __name__ == "__main__":

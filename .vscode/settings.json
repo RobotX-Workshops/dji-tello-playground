@@ -11,30 +11,7 @@
     "python.analysis.extraPaths": [
         "./venv/lib/python3.11/site-packages"
     ],
-    "editor.defaultFormatter": "ms-python.black-formatter",
-    "flake8.args": [
-        "--max-line-length=130",
-        "--ignore=E402",
-    ],
-    "cSpell.words": [
-        "frontalface",
-        "haarcascade",
-        "horz",
-        "JSIOCGAXES",
-        "JSIOCGAXMAP",
-        "JSIOCGBTNMAP",
-        "JSIOCGBUTTONS",
-        "JSIOCGNAME",
-        "numhats",
-        "Tect",
-        "tectinter",
-        "Tello",
-        "tellodrone",
-        "yolov",
-        "yzhang"
-    ],
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true,
+    "editor.defaultFormatter": "ms-python.python",
     "[ignore]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"
     }

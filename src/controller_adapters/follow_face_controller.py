@@ -1,8 +1,8 @@
 from typing import Tuple
-from services.tello_controller import TelloControlState
+from services.tello_controller import TelloControlState, TelloController
 
 
-class FaceFollowingController:
+class FaceFollowingController(TelloController):
 
     def __init__(self, max_velocity: int = 100):
         self.max_velocity = max_velocity

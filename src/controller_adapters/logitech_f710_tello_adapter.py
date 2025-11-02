@@ -13,7 +13,7 @@ from services.tello_controller import (
     TelloController,
 )
 from joysticks.pygame_connector import PyGameConnector
-from test_utils import run_adapter_test
+from .utils import run_adapter_test
 
 
 class LogitechF710ControlAdapter(TelloController):

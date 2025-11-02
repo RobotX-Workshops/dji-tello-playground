@@ -17,7 +17,7 @@ from face_tracking.utils.positioning_utils import (
 )
 from services.tello_command_dispatcher import TelloCommandDispatcher
 from services.tello_connector import TelloConnector
-from follow_face_controller import FaceFollowingController
+from src.controller_adapters.follow_face_controller import FaceFollowingController
 
 
 args = argparse.ArgumentParser()

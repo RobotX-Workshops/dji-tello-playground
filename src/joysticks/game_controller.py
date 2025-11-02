@@ -37,7 +37,7 @@ class ControllerButtonPressedState(ABC):
 
 
 @dataclass
-class ControllerState:
+class GameControllerState:
     """
     This state represents the desired state for the controller.
     """
@@ -84,7 +84,7 @@ class ControllerState:
         return asdict(self)
 
 
-class Controller(ABC):
+class GameController(ABC):
     @abstractmethod
-    def get_state(self) -> ControllerState:
+    def get_state(self) -> GameControllerState:
         """Gets the current controller state of the drone"""

@@ -12,23 +12,23 @@ try:
     from joysticks.xbox_one_controller_linux import LinuxXboxOnePyGameJoystick
     from joysticks.xbox_one_controller_windows import WindowsXboxOnePyGameJoystick
     from joysticks.game_controller import (
-        Controller,
-        ControllerState,
+        GameController,
+        GameControllerState,
     )
 except ModuleNotFoundError:
     from xbox_one_controller_linux import LinuxXboxOnePyGameJoystick
     from xbox_one_controller_windows import WindowsXboxOnePyGameJoystick
     from pygame_connector import PyGameConnector
     from game_controller import (
-        Controller,
-        ControllerState,
+        GameController,
+        GameControllerState,
     )
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-class XboxOnePyGameController(Controller):
+class XboxOnePyGameController(GameController):
     """
     The controller works on two main principles
         - That the axes act like a stream of data and are constant
@@ -36,7 +36,7 @@ class XboxOnePyGameController(Controller):
             The release of the button is not acknowledged directly but can be inferred
     """
 
-    platform_controller: Controller
+    platform_controller: GameController
 
     def __init__(self, pygame_connector: PyGameConnector, joystick_id: int = 0):
         if sys.platform == "win32":
@@ -52,7 +52,7 @@ class XboxOnePyGameController(Controller):
                 f"Unknown platform {sys.platform}. Cannot create {self.__class__.__name__}"
             )
 
-    def get_state(self) -> ControllerState:
+    def get_state(self) -> GameControllerState:
         return self.platform_controller.get_state()
 
 

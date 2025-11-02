@@ -13,8 +13,8 @@ try:
     from joysticks.xbox_controller_windows import WindowsXboxPyGameJoystick
     from joysticks.pygame_connector import PyGameConnector
     from joysticks.game_controller import (
-        Controller,
-        ControllerState,
+        GameController,
+        GameControllerState,
     )
 except ModuleNotFoundError:
     from xbox_controller_mac import MacXboxPyGameJoystick
@@ -22,15 +22,15 @@ except ModuleNotFoundError:
     from xbox_controller_windows import WindowsXboxPyGameJoystick
     from pygame_connector import PyGameConnector
     from game_controller import (
-        Controller,
-        ControllerState,
+        GameController,
+        GameControllerState,
     )
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class XboxPyGameController(Controller):
+class XboxPyGameController(GameController):
     """
     The controller works on two main principles
         - That the axes act like a stream of data and are constant
@@ -38,7 +38,7 @@ class XboxPyGameController(Controller):
             The release of the button is not acknowledged directly but can be inferred
     """
 
-    platform_controller: Controller
+    platform_controller: GameController
 
     def __init__(self, pygame_connector: PyGameConnector, joystick_id: int = 0):
         if "darwin" in sys.platform:
@@ -58,7 +58,7 @@ class XboxPyGameController(Controller):
                 f"Unknown platform {sys.platform}. Cannot create XboxPyGameJoystick"
             )
 
-    def get_state(self) -> ControllerState:
+    def get_state(self) -> GameControllerState:
         return self.platform_controller.get_state()
 
 

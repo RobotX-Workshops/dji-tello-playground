@@ -2,8 +2,12 @@ from djitellopy import Tello
 
 import time
 
+from services.tello_connector import TelloConnector
+
 # Create a Tello instance
-tello = Tello()
+tello = TelloConnector(Tello())
+
+print("Attempting to connect to drone ...")
 
 # Connect to Tello
 tello.connect()
@@ -15,7 +19,7 @@ for i in range(3, 0, -1):
 
 # Takeoff
 print("Take off")
-tello.takeoff()
+tello.take_off()
 
 print("Hovering for...")
 for i in range(3, 0, -1):

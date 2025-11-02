@@ -2,7 +2,7 @@ from djitellopy import Tello
 
 import time
 
-MOVEMENT_DISTANCE_CM = 50
+MOVEMENT_DISTANCE_CM = 20
 
 # Create a Tello instance
 tello = Tello()

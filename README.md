@@ -2,13 +2,13 @@
 
 Welcome to the DJI Tello Drone Playground! This project is designed for enthusiasts and learners who want to explore the capabilities of the DJI Tello drone through a series of practical exercises.
 
-# 🚀 Getting Started
+## 🚀 Getting Started
 
 1. [Git clone](https://git-scm.com/docs/git-clone) or download this repository to your computer.
 2. [Setup your development environment](./docs/setting_up_the_environment.md).
 3. [Connect](#setup-drone-connection) to the drone.
 4. Try controlling the drone manually with your smartphone. See [this](./docs/manual_control_with_smartphone.md) guide
-5. See the [example exercises](./src/examples) in the [`src`](./src/) folder
+5. See the [example exercises](./src/example_exercises) in the [`src`](./src/) folder
 6. Try some of the other more advanced exercises in the [`src`](./src/) folder
 7. Get creative and make your own scripts
 8. Have fun!
@@ -24,17 +24,41 @@ To interact with the drone, you must first establish a WiFi connection:
 
     The WiFi network typically appears as `TELLO-XXXXXX`. Default password is usually `12345678`.
 
+## 📂 Folder Structure
+
+The `src` folder contains the core modules and components of the project. Below is an overview of each subfolder and file:
+
+- **[`example_exercises/`](./src/example_exercises/README.md)**  
+  Provides sample scripts and exercises that demonstrate how to use the various components of the repository. These examples can serve as learning resources or starting points for new features.
+
+- **[`controller_adapters/`](./src/controller_adapters/README.md)**  
+  Contains modules that act as adapters between various input devices (e.g., joysticks, keyboards) and the Tello drone control logic. These adapters standardize control inputs so the drone can interpret commands regardless of the input source. The files contain classes to be used in other scripts but not executed directly.
+
+- **[`face_tracking/`](./src/face_tracking/README.md)**  
+  Includes code for detecting and tracking faces using computer vision techniques. This module may be used for features such as autonomous following or interactive behaviors based on face detection. The files contain classes to be used in other scripts but not executed directly.
+
+- **[`object_detection/`](./src/object_detection/README.md)**  
+  Houses functionality related to detecting objects within video feeds. This could be useful for obstacle avoidance, target recognition, or other advanced drone behaviors. The files contain classes to be used in other scripts but not executed directly
+
+- **[`joysticks/`](./src/joysticks/README.md)**  
+  Contains modules for interfacing with different joystick and game controller types. This folder enables the project to support multiple controller configurations for manual drone operation. The files contain classes to be used in other scripts but not executed directly
+
+- **[`services/`](./src/services/README.md)**  
+  Implements the core services for interacting with the Tello drone, such as establishing connections, sending commands, and managing the drone’s state. The files contain classes to be used in other scripts but not executed directly
+
 ## 📝 Exercises
 
-Dive into various [example exercises](./src/examples) located in the `src` folder. Each script guides you through different functionalities of the DJI Tello drone.
+Dive into various [example exercises](./src/example_exercises) located in the `src` folder. Each script guides you through different functionalities of the DJI Tello drone.
 
 To run an exercise, navigate to the [`src`](./src/)  folder and execute the corresponding script:
 
 ```bash
-python src/<script_name>.py
+python ./<folder>/<script_name>.py
 ```
 
-Replace <script_name> with the script you wish to run.
+Replace <script_name> with the script you wish to run and <folder> with the folder/s the script is located in.
+
+For More info checkout the [README](./src/example_exercises/README.md)
 
 ## 🔍 Troubleshooting
 
@@ -45,7 +69,7 @@ Replace <script_name> with the script you wish to run.
 
 ## 🐞 Debugging with Visual Studio Code
 
-To enhance your coding and debugging experience, we recommend using the launch configurations with Visual Studio Code (VS Code). 
+To enhance your coding and debugging experience, we recommend using the launch configurations with Visual Studio Code (VS Code).
 
 ## 📚 Other Resources
 
@@ -58,3 +82,4 @@ To enhance your coding and debugging experience, we recommend using the launch c
 - [Basic Simulator](https://github.com/Fireline-Science/tello_sim)
 - [Advanced Simulator](https://dev.droneblocks.io/simulator.html)
 - [YolovV8 Inference Container](https://github.com/anjrew/yolo-v8-inference-container/tree/main?tab=readme-ov-file)
+- [Tello Pilots Forum](https://tellopilots.com/)
