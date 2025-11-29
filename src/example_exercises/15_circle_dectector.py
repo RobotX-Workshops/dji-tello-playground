@@ -12,7 +12,7 @@ from djitellopy import Tello
 # Set to True to use local camera for debugging, False to use drone
 DEBUG_MODE = False
 # Set to True to use drone camera but not take off (for testing detection)
-NO_TAKEOFF = True
+NO_TAKEOFF = False
 
 # Global variable to hold tello instance for signal handler
 tello = None
@@ -90,17 +90,17 @@ def open_capture(source: str) -> cv2.VideoCapture:
 # Create window and trackbars for parameter tuning
 cv2.namedWindow("Circle Detection")
 cv2.createTrackbar(
-    "blurKernel", "Circle Detection", 9, 31, lambda x: None
+    "blurKernel", "Circle Detection", 6, 31, lambda x: None
 )  # Must be odd
-cv2.createTrackbar("blurSigma", "Circle Detection", 2, 10, lambda x: None)
+cv2.createTrackbar("blurSigma", "Circle Detection", 4, 10, lambda x: None)
 cv2.createTrackbar(
-    "dp", "Circle Detection", 10, 30, lambda x: None
+    "dp", "Circle Detection", 7, 30, lambda x: None
 )  # Will be divided by 10
-cv2.createTrackbar("param1", "Circle Detection", 60, 200, lambda x: None)
-cv2.createTrackbar("param2", "Circle Detection", 160, 300, lambda x: None)
-cv2.createTrackbar("minDist", "Circle Detection", 30, 200, lambda x: None)
-cv2.createTrackbar("minRadius", "Circle Detection", 20, 200, lambda x: None)
-cv2.createTrackbar("maxRadius", "Circle Detection", 440, 500, lambda x: None)
+cv2.createTrackbar("param1", "Circle Detection", 72, 200, lambda x: None)
+cv2.createTrackbar("param2", "Circle Detection", 50, 300, lambda x: None)
+cv2.createTrackbar("minDist", "Circle Detection", 26, 200, lambda x: None)
+cv2.createTrackbar("minRadius", "Circle Detection", 5, 200, lambda x: None)
+cv2.createTrackbar("maxRadius", "Circle Detection", 473, 500, lambda x: None)
 
 if DEBUG_MODE:
     video_source = resolve_video_source(None)
@@ -349,7 +349,7 @@ while True:
         yaw = normalize_velocity(yaw_velocity)
 
         # rc(left_right, forward_backward, up_down, yaw)
-        tello.send_rc_control(left_right, forward_backward, up_down, yaw)
+        tello.send_rc_control(left_right, forward_backward, up_down, -yaw)
 
     cv2.imshow("Circle Detection", img)
     time.sleep(1 / 15)
