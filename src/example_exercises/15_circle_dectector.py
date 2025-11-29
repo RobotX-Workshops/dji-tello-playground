@@ -115,9 +115,9 @@ else:
 
 # Control parameters
 FORWARD_SPEED = 20  # cm/s forward speed
-YAW_SENSITIVITY = 0.3  # Rotation sensitivity
-TARGET_RADIUS_MIN = 50  # Minimum radius to consider for navigation
-CENTER_TOLERANCE = 50  # Pixel tolerance for centering
+YAW_SENSITIVITY = 0.01  # Rotation sensitivity
+TARGET_RADIUS_MIN = 1  # Minimum radius to consider for navigation
+CENTER_TOLERANCE = 1  # Pixel tolerance for centering
 
 while True:
     # Get camera frame from drone or debug camera
