@@ -21,10 +21,12 @@ for i in range(3, 0, -1):
 print("Take off")
 tello.take_off()
 
-print("Hovering for...")
-for i in range(3, 0, -1):
-    print(i)
-    time.sleep(1)
+# print("Hovering for...")
+# for i in range(3, 0, -1):
+#     print(i)
+#     time.sleep(1)
+print("Height is ", tello.get_height(), "cm")
+
 
 print("Landing")
 # Land
