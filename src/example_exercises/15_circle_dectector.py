@@ -10,9 +10,9 @@ import numpy as np
 from djitellopy import Tello
 
 # Set to True to use local camera for debugging, False to use drone
-DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
+DEBUG_MODE = False
 # Set to True to use drone camera but not take off (for testing detection)
-NO_TAKEOFF = os.getenv("NO_TAKEOFF", "false").lower() == "true"
+NO_TAKEOFF = True
 
 # Global variable to hold tello instance for signal handler
 tello = None
@@ -97,7 +97,7 @@ cv2.createTrackbar(
     "dp", "Circle Detection", 10, 30, lambda x: None
 )  # Will be divided by 10
 cv2.createTrackbar("param1", "Circle Detection", 60, 200, lambda x: None)
-cv2.createTrackbar("param2", "Circle Detection", 175, 300, lambda x: None)
+cv2.createTrackbar("param2", "Circle Detection", 160, 300, lambda x: None)
 cv2.createTrackbar("minDist", "Circle Detection", 30, 200, lambda x: None)
 cv2.createTrackbar("minRadius", "Circle Detection", 20, 200, lambda x: None)
 cv2.createTrackbar("maxRadius", "Circle Detection", 440, 500, lambda x: None)
@@ -334,7 +334,7 @@ while True:
     # Send RC control commands to drone (only if not in debug mode)
     if not DEBUG_MODE:
         # rc(left_right, forward_backward, up_down, yaw)
-        tello.send_rc_control(0, forward_velocity, 0, yaw_velocity)
+        tello.send_rc_control(0, forward_velocity, 0, -yaw_velocity)
 
     cv2.imshow("Circle Detection", img)
     time.sleep(1 / 15)
