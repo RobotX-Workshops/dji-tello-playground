@@ -246,8 +246,8 @@ while True:
             # Calculate horizontal offset from center
             offset_x = circle_x - frame_center_x
 
-            # Calculate yaw rotation (negative to turn towards circle)
-            yaw_velocity = int(-offset_x * YAW_SENSITIVITY)
+            # Calculate yaw rotation (positive to turn towards circle)
+            yaw_velocity = int(offset_x * YAW_SENSITIVITY)
             # Clamp yaw velocity
             yaw_velocity = max(-100, min(100, yaw_velocity))
 
@@ -333,8 +333,23 @@ while True:
 
     # Send RC control commands to drone (only if not in debug mode)
     if not DEBUG_MODE:
+
+        def normalize_velocity(value):
+            """Ensure non-zero values are at least ±1"""
+            clamped = max(-100, min(100, value))
+            if clamped != 0:
+                if -1 < clamped < 1:
+                    return 1 if clamped > 0 else -1
+            return int(clamped)
+
+        # Clamp, normalize and convert to integers
+        left_right = normalize_velocity(0)
+        forward_backward = normalize_velocity(forward_velocity)
+        up_down = normalize_velocity(0)
+        yaw = normalize_velocity(yaw_velocity)
+
         # rc(left_right, forward_backward, up_down, yaw)
-        tello.send_rc_control(0, forward_velocity, 0, -yaw_velocity)
+        tello.send_rc_control(left_right, forward_backward, up_down, yaw)
 
     cv2.imshow("Circle Detection", img)
     time.sleep(1 / 15)
