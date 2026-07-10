@@ -19,7 +19,8 @@ python sanity_check.py
 
 
 
-To run full face tracking with the drone, use the [`follow_face.py`](../example_exercises/follow_face.py) exercise script. As noted in the [example exercises guide](../example_exercises/README.md), it must be run from the `src` directory:
+To run full face tracking with the drone, use the [`follow_face.py`](../example_exercises/follow_face.py) exercise script. It imports modules from both the `src` root (`face_tracking`, `services`) and from the `src.controller_adapters` package, so run it from the repository root with `src` added to `PYTHONPATH`:
+
 ```bash
-python example_exercises/follow_face.py
+PYTHONPATH=src python -m example_exercises.follow_face
 ```
