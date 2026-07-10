@@ -32,16 +32,16 @@ The `src` folder contains the core modules and components of the project. Below 
   Provides sample scripts and exercises that demonstrate how to use the various components of the repository. These examples can serve as learning resources or starting points for new features.
 
 - **[`controller_adapters/`](./src/controller_adapters/README.md)**  
-  Contains modules that act as adapters between various input devices (e.g., joysticks, keyboards) and the Tello drone control logic. These adapters standardize control inputs so the drone can interpret commands regardless of the input source. The files contain classes to be used in other scripts but not executed directly.
+  Contains modules that act as adapters between various input devices (e.g., joysticks, keyboards) and the Tello drone control logic. These adapters standardize control inputs so the drone can interpret commands regardless of the input source. Most files primarily expose classes for use in other scripts, but also include a `__main__` block for standalone manual testing.
 
 - **[`face_tracking/`](./src/face_tracking/README.md)**  
   Includes code for detecting and tracking faces using computer vision techniques. This module may be used for features such as autonomous following or interactive behaviors based on face detection. The files contain classes to be used in other scripts but not executed directly.
 
 - **[`object_detection/`](./src/object_detection/README.md)**  
-  Houses functionality related to detecting objects within video feeds. This could be useful for obstacle avoidance, target recognition, or other advanced drone behaviors. The files contain classes to be used in other scripts but not executed directly
+  Houses functionality related to detecting objects within video feeds. This could be useful for obstacle avoidance, target recognition, or other advanced drone behaviors. Most files can be run directly as standalone demo scripts.
 
 - **[`joysticks/`](./src/joysticks/README.md)**  
-  Contains modules for interfacing with different joystick and game controller types. This folder enables the project to support multiple controller configurations for manual drone operation. The files contain classes to be used in other scripts but not executed directly
+  Contains modules for interfacing with different joystick and game controller types. This folder enables the project to support multiple controller configurations for manual drone operation. Most files primarily expose classes for use in other scripts, but also include a `__main__` block for standalone manual testing.
 
 - **[`services/`](./src/services/README.md)**  
   Implements the core services for interacting with the Tello drone, such as establishing connections, sending commands, and managing the drone’s state. The files contain classes to be used in other scripts but not executed directly
@@ -63,7 +63,7 @@ For More info checkout the [README](./src/example_exercises/README.md)
 ## 🔍 Troubleshooting
 
 - See the drone status indicator states [here](./docs/drone_status_indicator_states.md)
-- There are some instances where the drones IMU may need to be calibrated. See the [calibration video guide]([./docs/calibrating_the_drone.md](https://youtu.be/ne5bofb7J9Y?si=JrDHTRJOB3Kxdrs4))
+- There are some instances where the drones IMU may need to be calibrated. See the [calibration video guide](https://youtu.be/ne5bofb7J9Y?si=JrDHTRJOB3Kxdrs4)
 - The firmware on the Tello drone may need to be updated. See the [firmware update video guide](https://youtu.be/zHYj1hzlH20?si=KWMkrB6HlDayjDrj)
 - To position itself, the drone uses a downward-facing camera. Ensure the surface is well-lit and has distinct features for the drone to detect. Poor lighting or a lack of distinct patterns on the floor may cause the drone to drift or lose position.
 

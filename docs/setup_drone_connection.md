@@ -9,7 +9,7 @@ To interact with the drone, you must first establish a WiFi connection:
    - The drone will only stay in the waiting state for a short while. Try restarting the done if it becomes unreachable why turning on and off again
 3. Connect your computer to the drone's WiFi network.
 
-    ![Connecting to Tello WiFi](./docs/images/trello_wifi.png)
+    ![Connecting to Tello WiFi](./images/trello_wifi.png)
 
     The WiFi network typically appears as `TELLO-XXXXXX`. Default password is usually `12345678`.
     
