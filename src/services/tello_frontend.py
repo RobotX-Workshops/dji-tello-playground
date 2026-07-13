@@ -39,6 +39,5 @@ class FrontEnd:
             key = cv2.waitKey(1) & 0xFF
             if key == 27:  # ESC key
                 break
-            iteration += 1
 
         self.tello_service.end()

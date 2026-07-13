@@ -35,7 +35,6 @@ class ImageProvider:
         )
         self.compression = compression
         self.open_cv = open_cv
-        self.open_cv.set_show_directly(False if headless else True)
 
     def connect_to_camera(self, id: int = 0):
         """

@@ -11,9 +11,6 @@ class OpenCvWrapper:
         LOGGER.debug(f"Connecting to camera id {id}")
         return cv2.VideoCapture(id)
 
-    def set_show_directly(self, show_directly: bool):
-        cv2.CAP_DSHOW = show_directly
-
     def resize(self, *args, **kwargs: Any) -> cv2.typing.MatLike:
         """
         Resizes an image using keyword arguments.

@@ -88,3 +88,8 @@ class GameController(ABC):
     @abstractmethod
     def get_state(self) -> GameControllerState:
         """Gets the current controller state of the drone"""
+
+
+def apply_dead_zone(value: float, dead_zone: float) -> float:
+    """Zeroes out axis noise/drift smaller than the dead zone threshold."""
+    return 0.0 if abs(value) < dead_zone else value
