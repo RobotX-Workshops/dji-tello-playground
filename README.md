@@ -88,7 +88,7 @@ If you encounter an error like `client_socket.bind(("", Tello.CONTROL_UDP_PORT))
    ps aux | grep python
    
    # Kill stuck Python processes if found
-   killall python3
+   killall python3  # ⚠️ WARNING: kills ALL Python 3 processes, not just the one on port 8889 — prefer targeted kill -9 <PID> above
    ```
 
 3. **Restart your computer** if the above doesn't work - this will clear all stuck processes.

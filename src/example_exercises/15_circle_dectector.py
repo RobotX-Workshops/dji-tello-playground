@@ -10,7 +10,7 @@ import numpy as np
 from djitellopy import Tello
 
 # Set to True to use local camera for debugging, False to use drone
-DEBUG_MODE = False
+DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
 # Set to True to use drone camera but not take off (for testing detection)
 NO_TAKEOFF = False
 
@@ -53,9 +53,6 @@ if DEBUG_MODE:
 else:
     # Create a Tello instance
     tello = Tello()
-
-    # Connect to Tello
-    tello.connect()
 
     print("Attempting to connect to drone ...")
 
@@ -117,7 +114,7 @@ else:
 FORWARD_SPEED = 20  # cm/s forward speed
 YAW_SENSITIVITY = 0.01  # Rotation sensitivity
 TARGET_RADIUS_MIN = 1  # Minimum radius to consider for navigation
-CENTER_TOLERANCE = 1  # Pixel tolerance for centering
+CENTER_TOLERANCE = 30  # Pixel tolerance for centering (roughly 5% of a typical 640px-wide frame; `width` isn't known yet at this point)
 
 while True:
     # Get camera frame from drone or debug camera
