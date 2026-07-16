@@ -24,3 +24,15 @@ To run full face tracking with the drone, use the [`follow_face.py`](../example_
 ```bash
 PYTHONPATH=src python -m example_exercises.follow_face
 ```
+
+On Windows Command Prompt:
+
+```bat
+set PYTHONPATH=src && python -m example_exercises.follow_face
+```
+
+On PowerShell:
+
+```powershell
+$env:PYTHONPATH = "src"; python -m example_exercises.follow_face
+```
