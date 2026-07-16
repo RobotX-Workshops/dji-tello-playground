@@ -139,6 +139,8 @@ class TectInterJoystick:
         left_stick_vertical = apply_dead_zone(left_stick_vertical, self.dead_zone)
         right_stick_horizontal = apply_dead_zone(right_stick_horizontal, self.dead_zone)
         right_stick_vertical = apply_dead_zone(right_stick_vertical, self.dead_zone)
+        left_analog_trigger = apply_dead_zone(left_analog_trigger, self.dead_zone)
+        right_analog_trigger = apply_dead_zone(right_analog_trigger, self.dead_zone)
 
         axes = ControllerAxesState(
             left_stick=StickState(
