@@ -67,6 +67,37 @@ For More info checkout the [README](./src/example_exercises/README.md)
 - The firmware on the Tello drone may need to be updated. See the [firmware update video guide](https://youtu.be/zHYj1hzlH20?si=KWMkrB6HlDayjDrj)
 - To position itself, the drone uses a downward-facing camera. Ensure the surface is well-lit and has distinct features for the drone to detect. Poor lighting or a lack of distinct patterns on the floor may cause the drone to drift or lose position.
 
+### Port Already in Use Error
+
+If you encounter an error like `client_socket.bind(("", Tello.CONTROL_UDP_PORT))` when trying to connect to the drone, it means another process is using the Tello UDP port (usually port 8889).
+
+**Solutions:**
+
+1. **Find and kill the process using the port:**
+   ```bash
+   # Find the process ID (PID) using the port
+   lsof -i :8889
+   
+   # Kill the process (replace <PID> with the actual process ID)
+   kill -9 <PID>
+   ```
+
+2. **Check for stuck Python processes:**
+   ```bash
+   # List all Python processes
+   ps aux | grep python
+   
+   # Kill stuck Python processes if found
+   killall python3  # ⚠️ WARNING: kills ALL Python 3 processes, not just the one on port 8889 — prefer targeted kill -9 <PID> above
+   ```
+
+3. **Restart your computer** if the above doesn't work - this will clear all stuck processes.
+
+4. **Use debug mode** for testing without connecting to the drone:
+   ```bash
+   DEBUG_MODE=true PYTHONPATH=src python3 ./src/example_exercises/your_script.py
+   ```
+
 ## 🐞 Debugging with Visual Studio Code
 
 To enhance your coding and debugging experience, we recommend using the launch configurations with Visual Studio Code (VS Code).
