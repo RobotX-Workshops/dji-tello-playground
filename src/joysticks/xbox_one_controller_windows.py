@@ -27,6 +27,7 @@ try:
         GameControllerState,
         StickState,
         ControllerButtonPressedState,
+        apply_dead_zone,
     )
 except ModuleNotFoundError:
     from pygame_connector import PyGameConnector
@@ -37,6 +38,7 @@ except ModuleNotFoundError:
         GameControllerState,
         StickState,
         ControllerButtonPressedState,
+        apply_dead_zone,
     )
 
 LOGGER = logging.getLogger(__name__)
@@ -148,18 +150,12 @@ class WindowsXboxOnePyGameJoystick(GameController):
             AxisKeys.RIGHT_ANALOG_TRIGGER.value
         )
 
-        if abs(left_stick_horizontal) < self.dead_zone:
-            left_stick_horizontal = 0.0
-        if abs(left_stick_vertical) < self.dead_zone:
-            left_stick_vertical = 0.0
-        if abs(right_stick_horizontal) < self.dead_zone:
-            right_stick_horizontal = 0.0
-        if abs(right_stick_vertical) < self.dead_zone:
-            right_stick_vertical = 0.0
-        if abs(left_analog_trigger) < self.dead_zone:
-            left_analog_trigger = 0.0
-        if abs(right_analog_trigger) < self.dead_zone:
-            right_analog_trigger = 0.0
+        left_stick_horizontal = apply_dead_zone(left_stick_horizontal, self.dead_zone)
+        left_stick_vertical = apply_dead_zone(left_stick_vertical, self.dead_zone)
+        right_stick_horizontal = apply_dead_zone(right_stick_horizontal, self.dead_zone)
+        right_stick_vertical = apply_dead_zone(right_stick_vertical, self.dead_zone)
+        left_analog_trigger = apply_dead_zone(left_analog_trigger, self.dead_zone)
+        right_analog_trigger = apply_dead_zone(right_analog_trigger, self.dead_zone)
 
         axes = ControllerAxesState(
             left_stick=StickState(
@@ -195,19 +191,10 @@ class WindowsXboxOnePyGameJoystick(GameController):
             int(hat[DPadKeys.VERTICAL.value]),
         )
 
-        pressed_button_ids = [
-            button.value
-            for button in ButtonKeys
-            if self.joystick.get_button(button.value)
-        ]
-        pressed_buttons = [ButtonKeys(button_id) for button_id in pressed_button_ids]
-
         if LOGGER.getEffectiveLevel() == logging.DEBUG:
             LOGGER.debug(f"Axes: {axes}")
             LOGGER.debug(f"Buttons: {buttons}")
-            LOGGER.debug(
-                f"Pressed Buttons: {[button.name for button in pressed_buttons]}"
-            )
+            LOGGER.debug(f"Pressed Buttons: {buttons.get_pressed_buttons()}")
 
         return GameControllerState(axes=axes, buttons=buttons, d_pad=d_pad_state)
 

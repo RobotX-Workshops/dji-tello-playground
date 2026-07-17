@@ -60,10 +60,10 @@ tello_service.take_off()
 tello_service.set_speed_cm_s(10)
 
 
+cam_output = tello_service.get_frame_read()
+
 while True:
     time.sleep(0.001)
-
-    cam_output = tello_service.get_frame_read()
 
     frame = cam_output.frame
 

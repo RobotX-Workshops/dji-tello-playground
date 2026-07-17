@@ -79,9 +79,6 @@ def get_distance_xy(point1: Tuple[int, int], point2: Tuple[int, int]) -> float:
     return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
 
 
-from typing import Tuple
-
-
 def get_distance_xyz(
     point1: Tuple[int, int, int], point2: Tuple[int, int, int]
 ) -> float:
@@ -114,9 +111,6 @@ def get_vector_xy(point1: Tuple[int, int], point2: Tuple[int, int]) -> Tuple[int
     x1, y1 = point1
     x2, y2 = point2
     return x2 - x1, y2 - y1
-
-
-from typing import Tuple
 
 
 def get_vector_xyz(

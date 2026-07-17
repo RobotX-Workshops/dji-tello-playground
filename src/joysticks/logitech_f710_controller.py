@@ -18,7 +18,9 @@ try:
         ControllerAxesState,
         StickState,
         GameControllerState,
+        ControllerButtonPressedState,
         ControllerDPadState,
+        apply_dead_zone,
     )
 except ModuleNotFoundError:
     from pygame_connector import PyGameConnector
@@ -28,6 +30,7 @@ except ModuleNotFoundError:
         GameControllerState,
         ControllerButtonPressedState,
         ControllerDPadState,
+        apply_dead_zone,
     )
 
 
@@ -128,14 +131,10 @@ class LogitechF710Joystick:
             _AxisKeys.RIGHT_STICK_VERTICAL.value
         )
 
-        if abs(left_stick_horizontal) < self.dead_zone:
-            left_stick_horizontal = 0.0
-        if abs(left_stick_vertical) < self.dead_zone:
-            left_stick_vertical = 0.0
-        if abs(right_stick_horizontal) < self.dead_zone:
-            right_stick_horizontal = 0.0
-        if abs(right_stick_vertical) < self.dead_zone:
-            right_stick_vertical = 0.0
+        left_stick_horizontal = apply_dead_zone(left_stick_horizontal, self.dead_zone)
+        left_stick_vertical = apply_dead_zone(left_stick_vertical, self.dead_zone)
+        right_stick_horizontal = apply_dead_zone(right_stick_horizontal, self.dead_zone)
+        right_stick_vertical = apply_dead_zone(right_stick_vertical, self.dead_zone)
 
         axes = ControllerAxesState(
             left_stick=StickState(
@@ -174,24 +173,10 @@ class LogitechF710Joystick:
             int(hat[_DPadKeys.VERTICAL.value]),
         )
 
-        print("Current state")
-        print(axes)
-        print(self.joystick.get_numbuttons(), self.joystick)
-        print(d_pad_state)
-
-        pressed_button_ids = [
-            button.value
-            for button in _ButtonKeys
-            if self.joystick.get_button(button.value)
-        ]
-        pressed_buttons = [_ButtonKeys(button_id) for button_id in pressed_button_ids]
-
         if _LOGGER.getEffectiveLevel() == logging.DEBUG:
             _LOGGER.debug(f"Axes: {axes}")
             _LOGGER.debug(f"Buttons: {buttons}")
-            _LOGGER.debug(
-                f"Pressed Buttons: {[button.name for button in pressed_buttons]}"
-            )
+            _LOGGER.debug(f"Pressed Buttons: {buttons.get_pressed_buttons()}")
 
         return GameControllerState(axes=axes, buttons=buttons, d_pad=d_pad_state)
 
