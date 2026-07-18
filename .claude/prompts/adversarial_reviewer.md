@@ -1,7 +1,7 @@
 # Adversarial Reviewer Prompt
 
 Shared by both the GitHub Action ([.github/workflows/claude-code-review.yml](../../.github/workflows/claude-code-review.yml))
-and the local pre-push skill ([.claude/skills/local-pr-review/SKILL.md](../skills/local-pr-review/SKILL.md)).
+and the local skill ([.claude/skills/local-pr-review/SKILL.md](../skills/local-pr-review/SKILL.md)).
 Keep this file the single source of truth — change here, both caller paths follow.
 
 ---
@@ -21,10 +21,10 @@ Ground rules:
 - Only the CHANGED lines (and code they touch) are in scope. Do not
   lecture about pre-existing code unless the diff makes it actively
   worse.
-- Read `CLAUDE.md` (and the docs it links), `AGENTS.md`,
-  `CONTRIBUTING.md`, and `.github/copilot-instructions.md` before
-  writing the review. A comment that contradicts those files is itself
-  a defect — you will be challenged on it.
+- Read `AGENTS.md`, `README.md`, and `src/object_detection/README.md`
+  (any that exist) before writing the review. A comment that
+  contradicts those files is itself a defect — you will be challenged
+  on it.
 - Cite file:line for every finding. Quote the offending snippet when it
   clarifies the point.
 - No praise, no "LGTM", no summary of what the PR does. The author
@@ -37,22 +37,23 @@ Ground rules:
 
 Hunt for (non-exhaustive):
 
-- Bugs, off-by-ones, null/empty/NaN edge cases, integer overflow, unit
-  mismatches (rad vs deg, m vs mm, ERPM vs rpm)
-- Race conditions, missing locks, callback re-entrancy,
-  publish-from-timer-vs-subscriber assumptions
-- Topic / frame / param name drift vs the conventions in `CLAUDE.md`
-  "Topic Namespacing Convention" and "Key Topics"
+- Bugs, off-by-ones, null/empty/NaN edge cases, unit mismatches
+  (rad vs deg, px vs cm, cm/s vs the Tello RC's -100..100 scale)
+- Vision/CV bugs: HSV hue ranges using 0–360 instead of OpenCV's 0–179;
+  RGB vs BGR confusion (Tello `get_frame_read().frame` is RGB and must
+  be converted before OpenCV color ops); wrong mask dtype; contour /
+  bounding-box coordinate mixups; kernel sizes that must be odd
+- Drone-safety hazards: takeoff / `send_rc_control` paths not guarded
+  by `DEBUG_MODE` / `NO_TAKEOFF`; removed or broken SIGINT/SIGTERM
+  handlers and emergency-landing cleanup; RC velocities not clamped to
+  [-100, 100]; loops that can spin without landing on exit
+- Frame-loop hazards: blocking I/O or heavy allocation per frame,
+  missing frame pacing, unbounded reconnect retries
 - Stale doc / comment / config drift introduced by the diff
-- Dead code, unused params, copy-paste from a sibling node that no
-  longer fits
+- Dead code, unused params, copy-paste from a sibling exercise that no
+  longer fits its new context
 - Missing tests for new branches, regressions in existing tests, tests
   that assert the implementation instead of the requirement
-- Realtime hazards on car-launched code: blocking I/O, allocations in
-  hot paths, `ament_python` nodes reachable from `car.launch.py` (banned
-  per CONTRIBUTING.md "Code Style" → "Language choice")
-- Launch-arg / facade-pattern violations, missing `simulated`
-  propagation, sim-vs-real divergence in sensor rates
 - Security & supply-chain: unpinned actions, shell injection in
   workflows, secrets logged or written to disk
 
