@@ -21,12 +21,14 @@ original branch and exits 0 so the push proceeds.
 
 ## Inputs
 
-Caller may pass `BASE_REF` and `HEAD_REF` via env. If absent:
+Caller may pass `BASE_REF` and `HEAD_REF` via env. Resolve `HEAD_REF` first —
+`BASE_REF`, `BRANCH`, and the banner all derive from it, so a caller-supplied
+`HEAD_REF` must not fall back to the current checkout:
 
 ```bash
-BASE_REF=${BASE_REF:-$(git merge-base HEAD origin/main)}
 HEAD_REF=${HEAD_REF:-HEAD}
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+BASE_REF=${BASE_REF:-$(git merge-base "$HEAD_REF" origin/main)}
+BRANCH=$(git rev-parse --abbrev-ref "$HEAD_REF")
 ```
 
 ## Flow
@@ -36,7 +38,10 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 - Refuse to run on `main` — there's no PR concept.
 - `git fetch origin main` so the merge-base is fresh.
 - Show a one-line banner: `=== LOCAL ADVERSARIAL REVIEW: ${BRANCH}
-  (BASE..HEAD = ${BASE_REF:0:7}..${HEAD_REF:0:7}) ===`.
+  (BASE..HEAD = $(git rev-parse --short "$BASE_REF")..$(git rev-parse
+  --short "$HEAD_REF")) ===`. (Resolve via `rev-parse` — substring
+  slicing like `${HEAD_REF:0:7}` prints garbage for symbolic refs such
+  as `HEAD` or `origin/main`.)
 - Print the bypass hint: `Bypass with CLAUDE_LOCAL_REVIEW=0 or git push
   --no-verify.`
 
@@ -47,10 +52,18 @@ Reuse the worktree pattern from
 each `Agent` call uses `isolation: "worktree"`. The worktree is
 checked out to `HEAD_REF`. No manual `git worktree add` from the skill.
 
-If the current branch is already checked out in another worktree
-(`git worktree list --porcelain | grep "branch refs/heads/${BRANCH}"`
-returns a path other than the current one), abort with
-`blocked-active-worktree` so the user resolves by hand.
+If the current branch is already checked out in another worktree, abort
+with `blocked-active-worktree` so the user resolves by hand. Parse the
+porcelain output structurally (exact-match the branch ref — a regex
+`grep` misfires on branch names with metacharacters or shared prefixes):
+
+```bash
+git worktree list --porcelain \
+  | awk -v ref="refs/heads/${BRANCH}" -v cur="$(git rev-parse --show-toplevel)" \
+      '/^worktree /{wt=substr($0,10)} $0=="branch "ref && wt!=cur{print wt}'
+```
+
+Non-empty output means another worktree has `${BRANCH}` checked out.
 
 ### 3. Reviewer pass
 
@@ -152,7 +165,8 @@ When converged:
 - `CLAUDE_LOCAL_REVIEW=0` env — skill exits 0 immediately when set.
   The pre-push hook short-circuits before calling the skill, so this
   is the fast path.
-- `git push --no-verify` — pre-commit framework skips the hook entirely.
+- `git push --no-verify` — git skips the pre-push hook entirely, so the
+  skill is never invoked.
 - Skill caller may pass `LOCAL_REVIEW_MAX_ITER=N` to override the cap.
 
 ## Outputs

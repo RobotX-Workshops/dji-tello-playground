@@ -170,23 +170,38 @@ After all agents report back:
 
 0. **Handle partial failure.** Collect all agent reports. An agent that crashed, failed pre-commit, or failed to push will not produce a valid `Branch:` line. For each such agent, note the file as `SKIPPED`. If any files were skipped, include them in the PR body under a `## Skipped files` heading with a one-line reason per file. Do not silently omit skipped files. If all agents failed, abort and print the list of failures instead of opening a PR.
 
-1. Aggregate all branches. Each agent pushed its own branch. The outer orchestrator cherry-picks all agent commits onto a single dedicated branch and then opens one PR:
+1. Aggregate all branches. Each agent pushed its own branch. Collect branch names only from reports that contain a valid `Branch:` line — skip empty or malformed values (those agents are already tracked as `SKIPPED` in step 0). If no valid branches remain, abort and print the failure list instead of continuing. The outer orchestrator then cherry-picks the valid agent commits onto a single dedicated branch and opens one PR:
 
    ```bash
-   # Create a single integration branch
-   git checkout -b docs/compress-batch origin/main
+   # Collect branch names from agent reports, dropping failed agents
+   BRANCHES=()
+   for report in "${REPORTS[@]}"; do
+     branch=$(echo "$report" | grep '^Branch:' | awk '{print $2}')
+     [ -n "$branch" ] || continue   # failed/SKIPPED agent — no valid Branch: line
+     BRANCHES+=("$branch")
+   done
+   [ ${#BRANCHES[@]} -gt 0 ] || { echo "All agents failed — nothing to aggregate"; exit 1; }
+   # Create (or reuse, on rerun) the single integration branch
+   if git show-ref --verify --quiet refs/heads/docs/compress-batch; then
+     git checkout docs/compress-batch
+   else
+     git checkout -b docs/compress-batch origin/main
+   fi
    # Fetch all agent branches (they exist on origin, not as local refs)
    git fetch origin
-   # Cherry-pick each agent's commit (collect branch names from agent reports)
-   git cherry-pick origin/<agent-branch-1> || { git cherry-pick --abort; exit 1; }
-   git cherry-pick origin/<agent-branch-2> || { git cherry-pick --abort; exit 1; }
-   # ... repeat for each agent branch
+   # Cherry-pick each valid agent's commit
+   for branch in "${BRANCHES[@]}"; do
+     git cherry-pick "origin/${branch}" || { git cherry-pick --abort; exit 1; }
+   done
    git push -u origin docs/compress-batch
-   gh pr create \
-     --base main \
-     --head docs/compress-batch \
-     --title "docs: compress documentation for token efficiency" \
-     --body "Batch compression pass. No information removed — only filler prose, redundant restatements, and motivational language stripped. See per-file reduction stats in the PR description."
+   # Reuse an existing open PR on rerun instead of creating a duplicate
+   if [ -z "$(gh pr list --head docs/compress-batch --state open --json number --jq '.[].number')" ]; then
+     gh pr create \
+       --base main \
+       --head docs/compress-batch \
+       --title "docs: compress documentation for token efficiency" \
+       --body "Batch compression pass. No information removed — only filler prose, redundant restatements, and motivational language stripped. See per-file reduction stats in the PR description."
+   fi
    ```
 
    If cherry-pick conflicts arise (two agents edited overlapping lines), resolve manually keeping both compressions, then continue.

@@ -158,6 +158,7 @@ done
 WAVE1_BRANCHES=()
 for report in "${WAVE1_REPORTS[@]}"; do
   branch=$(echo "$report" | grep '^Branch:' | awk '{print $2}')
+  [ -n "$branch" ] || continue  # failed agent — no valid Branch: line; skip
   WAVE1_BRANCHES+=("$branch")
 done
 
