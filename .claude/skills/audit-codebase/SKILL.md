@@ -141,7 +141,9 @@ Files: `.claude/skills/**/*.md`, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-inst
 Look for:
 
 - Instructions that contradict each other across files
-- Missing or stale cross-references (link targets that no longer exist)
+- Missing or stale cross-references: link targets that no longer exist, and
+  `§N`-style section anchors (e.g. `AGENTS.md §5 Step 6`) that no longer match
+  a section in the referenced document
 - Skills that reference commands, file paths, or topic names that no longer
   exist in the repo
 - `resolve-my-prs` / `resolve-my-issues` / [pr-resolution.md](docs/agent-workflows/pr-resolution.md): logic gaps,
@@ -194,6 +196,27 @@ possible (another agent may file first). Before each `gh issue create`, run:
   ```
 
 and skip if an exact title already exists, or if the title shares the same package token and the same first five words (split on whitespace; `area(package):` counts as word 1).
+
+This precheck is not atomic — two agents can still both miss each other's
+in-flight create and file duplicates. Treat that as the expected path, not an
+error, and self-heal immediately after each create:
+
+  ```bash
+  # After `gh issue create` returns the new issue URL/number:
+  gh issue list --state open --limit 1000 --json number,title \
+    | jq -r '.[] | "\(.number)\t\(.title)"'
+  ```
+
+If another open issue matches yours under the same rule (exact title, or same
+package token + same first five words) and has a **lower issue number**, yours
+lost the race — close it and reference the survivor:
+
+  ```bash
+  gh issue close <your-number> --comment "Duplicate of #<lower-number> (parallel audit race)."
+  ```
+
+Report it under `Skipped (duplicate or unconfirmed)` rather than `Issues filed`.
+The agent with the lower number keeps its issue and does nothing.
 
 ## Issue format
 
@@ -262,7 +285,9 @@ Next step: run /resolve-my-issues to implement fixes.
 
 - **Outer orchestrator never touches files.** Read-only `gh` and `git` commands only.
 - **Confirm before filing.** Agents must read the actual source before filing — no filing based on pattern-matching filenames or guessing.
-- **No duplicate issues.** Check the live list before every `gh issue create`.
+- **No duplicate issues.** Check the live list before every `gh issue create`,
+  and re-check after: if a parallel agent won the race (duplicate with a lower
+  issue number), close your issue as the duplicate.
 - **One issue per finding.** Do not bundle unrelated findings into a single issue — `/resolve-my-issues` dispatches one agent per issue, so granularity matters.
 - **Scope is bounded.** Only files in this repo (not submodules that have their own upstream) unless the submodule carries project-specific changes. To test (after `git submodule update --init`): inside the submodule directory, first run `git fetch origin` so the remote-tracking refs exist (worktree-initialised submodules are in detached HEAD with no fetched refs), then resolve the upstream default branch via `UP=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)` (handles submodules whose default branch is `master` rather than `main`), then run `git log --oneline "$UP"..HEAD`; if the output is non-empty, the submodule has local commits that diverge from upstream and is in scope. An empty output means upstream-only content — skip it.
 - When in doubt about whether a finding is real — skip it. A missed finding is better than a false-positive issue that wastes an agent's time.
