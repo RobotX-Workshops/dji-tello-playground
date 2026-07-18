@@ -4,6 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+# Cancel the in-flight review when a newer push supersedes it — each run is a
+# 30-minute job, so letting stale reviews finish just burns runners.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   # secrets-gate: `pull_request` runs from forks have no access to repository
   # secrets, so a job that needs CLAUDE_CODE_OAUTH_TOKEN would fail rather than
@@ -45,7 +51,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        # Pinned to the commit SHA behind the v5 tag (v5.0.1) per the same
+        # supply-chain hardening guidance as claude-code-action below.
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd  # v5
         with:
           fetch-depth: 1
           # Don't persist GITHUB_TOKEN in .git/config: this job hands a
