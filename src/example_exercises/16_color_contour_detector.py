@@ -22,6 +22,7 @@ import os
 import signal
 import sys
 import time
+from dataclasses import replace
 from typing import Optional
 
 import cv2
@@ -118,9 +119,15 @@ def build_trackbars(preset: ColorContourConfig) -> None:
     cv2.createTrackbar("min area", WINDOW, int(preset.min_area), 5000, _noop)
 
 
-def read_config_from_trackbars() -> ColorContourConfig:
-    """Build a detector config from the current slider positions."""
-    return ColorContourConfig(
+def read_config_from_trackbars(current: ColorContourConfig) -> ColorContourConfig:
+    """
+    Update a detector config from the current slider positions.
+
+    Only the trackbar-driven fields change; the preset's other fields (the
+    second hue range for red, blur kernel, highlight color) are preserved.
+    """
+    return replace(
+        current,
         lower_hsv=(
             cv2.getTrackbarPos("H min", WINDOW),
             cv2.getTrackbarPos("S min", WINDOW),
@@ -132,7 +139,6 @@ def read_config_from_trackbars() -> ColorContourConfig:
             cv2.getTrackbarPos("V max", WINDOW),
         ),
         min_area=float(cv2.getTrackbarPos("min area", WINDOW)),
-        highlight_color=(0, 255, 0),
     )
 
 
@@ -181,7 +187,7 @@ while True:
     frame_center_y = height // 2
 
     # Re-read the color config each frame so the sliders apply live.
-    detector.config = read_config_from_trackbars()
+    detector.config = read_config_from_trackbars(detector.config)
     detections = detector.detect(img)
 
     # Draw the frame-center crosshair.
