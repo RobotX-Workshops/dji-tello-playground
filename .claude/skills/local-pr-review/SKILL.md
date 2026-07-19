@@ -9,7 +9,9 @@ Mirror of [.github/workflows/claude-code-review.yml](../../../.github/workflows/
 run locally, in an isolated git worktree, with the implementer agent in
 the same session pushing back on weak findings and fixing real ones.
 Loops until reviewer and implementer agree, then fast-forwards the
-original branch and exits 0.
+original branch and reports success. Non-convergence (stable
+disagreement or the iteration cap) is always reported as a failure
+with the outstanding findings — never as a pass.
 
 ## When to use
 
@@ -41,10 +43,20 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 Each `Agent` call uses `isolation: "worktree"`. The worktree is
 checked out to `HEAD_REF`. No manual `git worktree add` from the skill.
 
-If the current branch is already checked out in another worktree
-(`git worktree list --porcelain | grep "branch refs/heads/${BRANCH}"`
-returns a path other than the current one), abort with
-`blocked-active-worktree` so the user resolves by hand.
+If the current branch is already checked out in another worktree,
+abort with `blocked-active-worktree` so the user resolves by hand.
+`--porcelain` output pairs each `worktree <path>` line with its
+`branch` line, so parse the pairs and compare paths — a bare grep for
+the branch line can't tell which worktree it belongs to:
+
+```bash
+current=$(git rev-parse --show-toplevel)
+other=$(git worktree list --porcelain \
+  | awk -v ref="branch refs/heads/${BRANCH}" \
+      '/^worktree /{p=substr($0,10)} $0==ref{print p}' \
+  | grep -vFx "$current" || true)
+[ -n "$other" ] && echo "blocked-active-worktree: $other" && stop
+```
 
 ### 3. Reviewer pass
 
@@ -123,8 +135,14 @@ loop forever — the user can inspect, decide, and push anyway.
 
 When converged:
 
-1. In the worktree, delete `HISTORY.md` (it's loop scratch, not PR
-   content), then stage every edit the implementer made: `git add -A`.
+1. In the worktree, collect the file list the implementer reported
+   touching (the `FIXED <file:line>` lines in `HISTORY.md`), then
+   delete `HISTORY.md` (it's loop scratch, not PR content). Stage
+   exactly the reported files with `git add -- <file>...` — never
+   `git add -A`. If `git status --porcelain` still shows modified or
+   untracked files after that, stop and surface them to the user
+   instead of staging; stray agent artifacts must not ride into the
+   commit.
 2. If the worktree's index is non-empty, fold the loop's work into a
    single commit: `git commit -m "fixup! adversarial review iteration
    loop"` (the user squashes it when merging).

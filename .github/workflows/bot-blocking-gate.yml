@@ -170,9 +170,13 @@ jobs:
             # OLDEST run for this SHA, which on a rerun reads stale
             # status/conclusion and can misclassify the skip /
             # in_progress cases.
-            run_id=$(gh api --paginate \
+            # --slurp collapses the one-JSON-document-per-page output of
+            # --paginate into a single array; without it the jq filter
+            # runs per page and run_id could come back multiline once
+            # more than one page of runs exists for this SHA.
+            run_id=$(gh api --paginate --slurp \
               "repos/${{ github.repository }}/actions/workflows/claude-code-review.yml/runs?head_sha=${SHA}&per_page=10" \
-              --jq '[.workflow_runs[]] | sort_by(.created_at) | reverse | .[0].id // empty')
+              --jq '[.[].workflow_runs[]] | sort_by(.created_at) | reverse | .[0].id // empty')
           fi
 
           if [[ -z "$run_id" ]]; then
@@ -311,7 +315,12 @@ jobs:
               summary="Bot review marker present but \`blocking=\` unparseable. Marker: \`${MARKER}\`"
               ;;
             no-marker|stale-marker)
-              if [[ "$REVIEW_JOB_CONCLUSION" == "skipped" ]]; then
+              # A skipped claude-review job only counts as an authorized
+              # skip when the reviewer workflow itself succeeded (i.e.
+              # secrets-gate ran and said no). A cancelled or failed
+              # workflow also leaves the dependent job "skipped" — that
+              # must fail closed, not pass by absence.
+              if [[ "$REVIEW_JOB_CONCLUSION" == "skipped" && "$REVIEW_CONCLUSION" == "success" ]]; then
                 conclusion="success"
                 title="Claude Code Review skipped on ${SHORT}"
                 summary="The \`claude-review\` job was skipped on \`${SHORT}\` (secrets-gate emitted \`ok=false\` — typical for fork PRs without \`CLAUDE_CODE_OAUTH_TOKEN\`). Gate passes by absence."

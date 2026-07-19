@@ -113,13 +113,19 @@ this prompt:
 
 === Branch checkout ===
 
-  git fetch origin ${BRANCH}
-  git fetch origin ${DEFAULT_BRANCH}
-  git checkout -B local-${N} origin/${BRANCH}
-  git rebase origin/${DEFAULT_BRANCH}
+Treat `${BRANCH}` as untrusted input — it comes from GitHub metadata
+and git refnames may legally contain shell metacharacters (`;`, `$`,
+quotes, parens). Validate it once before first use and quote every
+expansion:
+
+  git check-ref-format --branch "${BRANCH}"   # abort blocked-bad-ref on failure
+  git fetch origin "${BRANCH}"
+  git fetch origin "${DEFAULT_BRANCH}"
+  git checkout -B "local-${N}" "origin/${BRANCH}"
+  git rebase "origin/${DEFAULT_BRANCH}"
   # ...do work...
   # ...run the pre-push gate (see below)...
-  git push --force-with-lease origin local-${N}:${BRANCH}
+  git push --force-with-lease origin "local-${N}:${BRANCH}"
 
 If `git rebase origin/${DEFAULT_BRANCH}` hits a conflict whose intent is
 genuinely ambiguous after consulting code, history, and PR description,
@@ -153,9 +159,11 @@ black/flake8 repo-wide, so the gate is scoped to the files this PR
 touches. Tools are pinned in requirements.txt (black, flake8, pytest).
 Run from the repo root and fix any failure before pushing:
 
-  CHANGED=$(git diff --name-only origin/${DEFAULT_BRANCH}...HEAD -- '*.py')
-  [ -n "$CHANGED" ] && black --check $CHANGED
-  [ -n "$CHANGED" ] && flake8 --max-line-length 88 --extend-ignore E203,E402 $CHANGED
+  # NUL-delimited into an array so filenames with spaces, globs, or
+  # leading dashes can't be split or read as options.
+  mapfile -d '' CHANGED < <(git diff -z --name-only "origin/${DEFAULT_BRANCH}...HEAD" -- '*.py')
+  ((${#CHANGED[@]})) && black --check -- "${CHANGED[@]}"
+  ((${#CHANGED[@]})) && flake8 --max-line-length 88 --extend-ignore E203,E402 -- "${CHANGED[@]}"
   pytest -q || [ $? -eq 5 ]   # exit 5 = "no tests collected" — fine today,
                               # mandatory so broken tests can't ship later
 
@@ -347,7 +355,7 @@ Threads you intentionally left open should be called out in `Notes`.
 
 Run the pre-push gate above. Then:
 
-  git push --force-with-lease origin local-${N}:${BRANCH}
+  git push --force-with-lease origin "local-${N}:${BRANCH}"
 
 Do NOT wait for CI. Return immediately after the push so the
 orchestrator can move on. CI babysitting belongs to the circle-back
@@ -409,7 +417,7 @@ the CI run from the prior pass.
 
 4. **Same push policy.** Before pushing the fix, rebase on `origin/${DEFAULT_BRANCH}` again, re-run the pre-push gate, then `git push --force-with-lease`. Resolve any threads you addressed via the GraphQL mutation.
 
-5. **Repeat the circle-back** by re-fanning out over the still-open PRs until every PR is mergeable: no conflicts, all required checks green, all threads resolved. Each round is its own parallel fan-out under the same `MAX_CONCURRENT` cap.
+5. **Repeat the circle-back** by re-fanning out over the still-open PRs until every PR is mergeable: no conflicts, all required checks green, all threads resolved. Each round is its own parallel fan-out under the same `MAX_CONCURRENT` cap. **Hard cap: `MAX_ROUNDS = 3` circle-back rounds per invocation.** A PR that still has open work after the cap is marked `blocked-circle-back-limit` in the final report — with the unresolved check or thread URL and the rounds spent — and excluded from the merge order. Never keep re-dispatching past the cap; a run that hasn't settled in 3 rounds needs the user, not more agents.
 
 6. **Genuine blocker → stop and surface it.** If an Agent returns `blocked-<reason>` for ambiguous conflict, CI failure with no clear cause after honest investigation, or two comments that contradict each other where neither matches the PR's business intent, surface the blocker in the final report with the specific PR number, the failing check or thread URL, and what was already tried. Do not re-dispatch the same PR with the same prompt hoping for a different answer.
 
