@@ -67,5 +67,7 @@ contrary):
 Empty sections: `(none)`. Do not omit a heading.
 
 After this report, the orchestrator will rerun the reviewer over the
-new diff. Convergence = reviewer returns zero `### Blocking` findings
-and you have a recorded verdict on every prior finding.
+new diff. Convergence is decided by the orchestrator (see
+`local-pr-review`): the reviewer returns zero `### Blocking` AND zero
+`### Non-blocking` findings (SUSPECT items are advisory) and you have
+a recorded verdict on every prior finding.
