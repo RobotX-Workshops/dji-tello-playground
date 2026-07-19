@@ -27,6 +27,7 @@ Caller may pass `BASE_REF` and `HEAD_REF` via env. Resolve `HEAD_REF` first —
 
 ```bash
 HEAD_REF=${HEAD_REF:-HEAD}
+git fetch origin main
 BASE_REF=${BASE_REF:-$(git merge-base "$HEAD_REF" origin/main)}
 BRANCH=$(git rev-parse --abbrev-ref "$HEAD_REF")
 ```
@@ -36,7 +37,8 @@ BRANCH=$(git rev-parse --abbrev-ref "$HEAD_REF")
 ### 1. Pre-flight
 
 - Refuse to run on `main` — there's no PR concept.
-- `git fetch origin main` so the merge-base is fresh.
+- `origin main` was already fetched while resolving `BASE_REF` above, so
+  the merge-base is fresh by the time this step runs.
 - Show a one-line banner: `=== LOCAL ADVERSARIAL REVIEW: ${BRANCH}
   (BASE..HEAD = $(git rev-parse --short "$BASE_REF")..$(git rev-parse
   --short "$HEAD_REF")) ===`. (Resolve via `rev-parse` — substring
