@@ -7,7 +7,6 @@ import sys
 import time
 
 import numpy as np
-from djitellopy import Tello
 
 # Set to True to use local camera for debugging, False to use drone
 DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
@@ -37,10 +36,6 @@ def emergency_landing(signum=None, frame=None):
     print("Cleanup complete. Exiting...")
     sys.exit(0)
 
-
-# Register signal handlers
-signal.signal(signal.SIGINT, emergency_landing)  # Ctrl+C
-signal.signal(signal.SIGTERM, emergency_landing)  # Termination signal
 
 # Register signal handlers
 signal.signal(signal.SIGINT, emergency_landing)  # Ctrl+C
@@ -358,26 +353,3 @@ while True:
 # Clean shutdown
 print("\nShutting down...")
 emergency_landing()
-
-# print("Starting flying in ...")
-# for i in range(3, 0, -1):
-#     print(i)
-#     time.sleep(1)
-
-# # Takeoff
-# print("Take off")
-# tello.take_off()
-
-# # print("Hovering for...")
-# # for i in range(3, 0, -1):
-# #     print(i)
-# #     time.sleep(1)
-# print("Height is ", tello.get_height(), "cm")
-
-
-# print("Landing")
-# # Land
-# tello.land()
-
-# End the connection
-# tello.end()
