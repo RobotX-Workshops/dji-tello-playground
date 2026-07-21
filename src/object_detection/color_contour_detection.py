@@ -176,9 +176,7 @@ class ColorContourDetector:
             contours smaller than ``config.min_area`` filtered out.
         """
         mask = self.create_mask(img_bgr)
-        contours, _ = cv2.findContours(
-            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         detections: List[ColorContour] = []
         for contour in contours:
@@ -200,9 +198,7 @@ class ColorContourDetector:
         detections.sort(key=lambda d: d.area, reverse=True)
         return detections
 
-    def detect_largest(
-        self, img_bgr: cv2.typing.MatLike
-    ) -> Optional[ColorContour]:
+    def detect_largest(self, img_bgr: cv2.typing.MatLike) -> Optional[ColorContour]:
         """Return the single biggest color blob, or None if nothing matched."""
         detections = self.detect(img_bgr)
         return detections[0] if detections else None

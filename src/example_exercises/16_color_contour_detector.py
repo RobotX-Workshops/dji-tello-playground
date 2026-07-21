@@ -29,9 +29,7 @@ import cv2
 from djitellopy import Tello
 
 # Make the object_detection package importable when run directly.
-sys.path.insert(
-    0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from object_detection.color_contour_detection import (  # noqa: E402
     COLOR_PRESETS,
     ColorContourConfig,
@@ -191,10 +189,20 @@ while True:
     detections = detector.detect(img)
 
     # Draw the frame-center crosshair.
-    cv2.line(img, (frame_center_x - 20, frame_center_y),
-             (frame_center_x + 20, frame_center_y), (255, 255, 255), 2)
-    cv2.line(img, (frame_center_x, frame_center_y - 20),
-             (frame_center_x, frame_center_y + 20), (255, 255, 255), 2)
+    cv2.line(
+        img,
+        (frame_center_x - 20, frame_center_y),
+        (frame_center_x + 20, frame_center_y),
+        (255, 255, 255),
+        2,
+    )
+    cv2.line(
+        img,
+        (frame_center_x, frame_center_y - 20),
+        (frame_center_x, frame_center_y + 20),
+        (255, 255, 255),
+        2,
+    )
 
     detector.draw(img, detections)
 
@@ -217,16 +225,37 @@ while True:
         if abs(offset_x) < CENTER_TOLERANCE:
             forward_velocity = FORWARD_SPEED
 
-        cv2.line(img, (frame_center_x, frame_center_y),
-                 largest.center, (255, 0, 255), 2)
-        cv2.putText(img, f"Offset: ({offset_x}, {offset_y})", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-        cv2.putText(img, f"Yaw:{yaw_velocity} Fwd:{forward_velocity} "
-                    f"UpDn:{up_down_velocity}", (10, 55),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        cv2.line(
+            img, (frame_center_x, frame_center_y), largest.center, (255, 0, 255), 2
+        )
+        cv2.putText(
+            img,
+            f"Offset: ({offset_x}, {offset_y})",
+            (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (255, 255, 255),
+            2,
+        )
+        cv2.putText(
+            img,
+            f"Yaw:{yaw_velocity} Fwd:{forward_velocity} " f"UpDn:{up_down_velocity}",
+            (10, 55),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (255, 255, 255),
+            2,
+        )
     else:
-        cv2.putText(img, "No target detected", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.putText(
+            img,
+            "No target detected",
+            (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            (0, 0, 255),
+            2,
+        )
 
     # Status banner.
     if DEBUG_MODE:
@@ -235,10 +264,24 @@ while True:
         mode_text = "NO TAKEOFF"
     else:
         mode_text = "DRONE FLYING"
-    cv2.putText(img, mode_text, (width - 200, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-    cv2.putText(img, f"Blobs: {len(detections)}", (width - 200, 60),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+    cv2.putText(
+        img,
+        mode_text,
+        (width - 200, 30),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        (0, 255, 255),
+        2,
+    )
+    cv2.putText(
+        img,
+        f"Blobs: {len(detections)}",
+        (width - 200, 60),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        (0, 255, 255),
+        2,
+    )
 
     # Only send flight commands when actually airborne.
     if not DEBUG_MODE and not NO_TAKEOFF:
