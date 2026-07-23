@@ -22,7 +22,6 @@ class RecognitionFaceIdentifier(AbstractFaceIdentifier):
         model: Literal["hog", "cnn"] = "hog",
         compression_factor: int = 4,
     ):
-        self._face_cascade = open_cv.get_face_classifier()
         self.open_cv = open_cv
         self.model = model
         self.image_compression = image_compression_service
