@@ -15,7 +15,7 @@ Welcome to the DJI Tello Drone Playground! This project is designed for enthusia
 
 ## 📡 Setup Drone Connection
 
-To interact with the drone, you must first establish a WiFi connection:
+To interact with the drone, you must first establish a WiFi connection (see the [full connection guide](./docs/setup_drone_connection.md) for the power-on button press and status-light sequence):
 
 1. Power on your DJI Tello drone.
 2. Connect your computer to the drone's WiFi network.
@@ -35,28 +35,28 @@ The `src` folder contains the core modules and components of the project. Below 
   Contains modules that act as adapters between various input devices (e.g., joysticks, keyboards) and the Tello drone control logic. These adapters standardize control inputs so the drone can interpret commands regardless of the input source. Most files primarily expose classes for use in other scripts, but also include a `__main__` block for standalone manual testing.
 
 - **[`face_tracking/`](./src/face_tracking/README.md)**  
-  Includes code for detecting and tracking faces using computer vision techniques. This module may be used for features such as autonomous following or interactive behaviors based on face detection. The files contain classes to be used in other scripts but not executed directly.
+  Includes code for detecting and tracking faces using computer vision techniques. This module may be used for features such as autonomous following or interactive behaviors based on face detection. Most files contain classes to be used in other scripts, with the exception of `sanity_check.py`, a standalone script for testing face detection against a local webcam without a drone.
 
 - **[`object_detection/`](./src/object_detection/README.md)**  
-  Houses functionality related to detecting objects within video feeds. This could be useful for obstacle avoidance, target recognition, or other advanced drone behaviors. Most files can be run directly as standalone demo scripts.
+  Houses functionality related to detecting objects in images (currently demoed on static sample images). This could be useful for obstacle avoidance, target recognition, or other advanced drone behaviors. Most files can be run directly as standalone demo scripts.
 
 - **[`joysticks/`](./src/joysticks/README.md)**  
   Contains modules for interfacing with different joystick and game controller types. This folder enables the project to support multiple controller configurations for manual drone operation. Most files primarily expose classes for use in other scripts, but also include a `__main__` block for standalone manual testing.
 
 - **[`services/`](./src/services/README.md)**  
-  Implements the core services for interacting with the Tello drone, such as establishing connections, sending commands, and managing the drone’s state. The files contain classes to be used in other scripts but not executed directly
+  Implements the core services for interacting with the Tello drone, such as establishing connections, sending commands, and managing the drone’s state. The files contain classes to be used in other scripts but not executed directly.
 
 ## 📝 Exercises
 
 Dive into various [example exercises](./src/example_exercises) located in the `src` folder. Each script guides you through different functionalities of the DJI Tello drone.
 
-To run an exercise, navigate to the [`src`](./src/)  folder and execute the corresponding script:
+Several exercises import shared modules such as `services`, `face_tracking`, and `controller_adapters`, so run them from the repository root with `src` on your `PYTHONPATH`:
 
 ```bash
-python ./<folder>/<script_name>.py
+PYTHONPATH=src python3 ./src/<folder>/<script_name>.py
 ```
 
-Replace <script_name> with the script you wish to run and <folder> with the folder/s the script is located in.
+Replace `<script_name>` with the script you wish to run and `<folder>` with the folder/s the script is located in, e.g. `PYTHONPATH=src python3 ./src/example_exercises/2_simple_takeoff_land.py`.
 
 For More info checkout the [README](./src/example_exercises/README.md)
 
@@ -93,9 +93,9 @@ If you encounter an error like `client_socket.bind(("", Tello.CONTROL_UDP_PORT))
 
 3. **Restart your computer** if the above doesn't work - this will clear all stuck processes.
 
-4. **Use debug mode** for testing without connecting to the drone:
+4. **Use debug mode** for testing without connecting to the drone. Currently only the circle-detector exercise supports this:
    ```bash
-   DEBUG_MODE=true PYTHONPATH=src python3 ./src/example_exercises/your_script.py
+   DEBUG_MODE=true PYTHONPATH=src python3 ./src/example_exercises/15_circle_dectector.py
    ```
 
 ## 🐞 Debugging with Visual Studio Code
