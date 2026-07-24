@@ -2,7 +2,7 @@
 
 This package contains the low-level joystick/game controller integrations used by the [`controller_adapters/`](../controller_adapters/README.md) package to translate raw input into Tello drone commands.
 
-Each supported controller has one or more platform-specific implementations (e.g. `xbox_controller_linux.py`, `xbox_controller_mac.py`, `xbox_controller_windows.py`) behind a common wrapper (e.g. `xbox_controller.py`) that picks the right implementation for the current OS at runtime.
+Most supported controllers have one or more platform-specific implementations (e.g. `xbox_controller_linux.py`, `xbox_controller_mac.py`, `xbox_controller_windows.py`) behind a common wrapper (e.g. `xbox_controller.py`) that picks the right implementation for the current OS at runtime. A few (Logitech F710, TectInter) ship as a single cross-platform implementation instead.
 
 See [Controllers and Joysticks](../../docs/controllers.md) for the list of controllers supported on each platform.
 

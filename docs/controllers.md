@@ -1,6 +1,8 @@
 # 🎮 Controllers and Joysticks
 
-This directory contains the code for the controllers and joysticks used in the project.
+This page lists the controllers and joysticks supported by the project. See [`src/controller_adapters/`](../src/controller_adapters/README.md) and [`src/joysticks/`](../src/joysticks/README.md) for the implementation.
+
+Only Xbox 360, Wired Xbox One, and Keyboard are currently selectable via `control_via_gamepad.py --controller`; the other controllers below are run directly through their own adapter script (see their `__main__` blocks) rather than through that CLI's `auto`-detection.
 
 ## 🖥 System Support
 

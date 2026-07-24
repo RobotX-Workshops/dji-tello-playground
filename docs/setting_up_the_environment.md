@@ -16,7 +16,7 @@ You can download Visual Studio Code from [this link](https://code.visualstudio.c
 
 ### Dependencies
 
-Before starting, ensure you have Python 3.11 higher.
+Before starting, ensure you have Python 3.11 installed (the project is developed and tested against 3.11).
 
 You can download from [here for Windows](https://apps.microsoft.com/detail/9nrwmjp3717k?hl=en-US&gl=US) version or the official site [here](https://www.python.org/downloads/release/python-3115/) for other platforms.
 
@@ -112,3 +112,24 @@ pip install -r requirements.txt
 ```
 
 Remember to activate the Conda environment each time you work on this project.
+
+## Running Scripts
+
+Several scripts under `src/` import sibling packages such as `services`, `face_tracking`, and `controller_adapters`, so once your environment is set up, run scripts from the repository root with `src` on your `PYTHONPATH`:
+
+```bash
+# macOS/Linux
+PYTHONPATH=src python3 ./src/<folder>/<script_name>.py
+```
+
+```bat
+:: Windows Command Prompt
+set PYTHONPATH=src && python ./src/<folder>/<script_name>.py
+```
+
+```powershell
+# Windows PowerShell
+$env:PYTHONPATH = "src"; python ./src/<folder>/<script_name>.py
+```
+
+See the root [README](../README.md#-exercises) for more details.
