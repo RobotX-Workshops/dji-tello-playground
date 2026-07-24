@@ -35,7 +35,7 @@ The `src` folder contains the core modules and components of the project. Below 
   Contains modules that act as adapters between various input devices (e.g., joysticks, keyboards) and the Tello drone control logic. These adapters standardize control inputs so the drone can interpret commands regardless of the input source. Most files primarily expose classes for use in other scripts, but also include a `__main__` block for standalone manual testing.
 
 - **[`face_tracking/`](./src/face_tracking/README.md)**  
-  Includes code for detecting and tracking faces using computer vision techniques. This module may be used for features such as autonomous following or interactive behaviors based on face detection. Most files contain classes to be used in other scripts, with the exception of `sanity_check.py`, a standalone script for testing face detection against a local webcam without a drone.
+  Includes code for detecting and tracking faces using computer vision techniques. This module may be used for features such as autonomous following or interactive behaviors based on face detection. Most files contain classes to be used in other scripts, except for `sanity_check.py`, a standalone script for testing face detection against a local webcam without a drone.
 
 - **[`object_detection/`](./src/object_detection/README.md)**  
   Houses functionality related to detecting objects in images (currently demoed on static sample images). This could be useful for obstacle avoidance, target recognition, or other advanced drone behaviors. Most files can be run directly as standalone demo scripts.
@@ -53,7 +53,18 @@ Dive into various [example exercises](./src/example_exercises) located in the `s
 Several exercises import shared modules such as `services`, `face_tracking`, and `controller_adapters`, so run them from the repository root with `src` on your `PYTHONPATH`:
 
 ```bash
+# macOS/Linux
 PYTHONPATH=src python3 ./src/<folder>/<script_name>.py
+```
+
+```bat
+:: Windows Command Prompt
+set PYTHONPATH=src && python ./src/<folder>/<script_name>.py
+```
+
+```powershell
+# Windows PowerShell
+$env:PYTHONPATH = "src"; python ./src/<folder>/<script_name>.py
 ```
 
 Replace `<script_name>` with the script you wish to run and `<folder>` with the folder/s the script is located in, e.g. `PYTHONPATH=src python3 ./src/example_exercises/2_simple_takeoff_land.py`.

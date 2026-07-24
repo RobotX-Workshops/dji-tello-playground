@@ -5,7 +5,18 @@ This folder contains a collection of sample scripts and exercises designed to he
 Run scripts from the repository root with `src` on your `PYTHONPATH`, since several exercises import sibling packages such as `services`, `face_tracking`, and `controller_adapters`:
 
 ```bash
+# macOS/Linux
 PYTHONPATH=src python3 ./src/example_exercises/<script_name>.py
+```
+
+```bat
+:: Windows Command Prompt
+set PYTHONPATH=src && python ./src/example_exercises/<script_name>.py
+```
+
+```powershell
+# Windows PowerShell
+$env:PYTHONPATH = "src"; python ./src/example_exercises/<script_name>.py
 ```
 
 Just `cd`-ing into `src` and running a script directly is not enough — scripts like `2_simple_takeoff_land.py` will fail with `ModuleNotFoundError: No module named 'services'` without `PYTHONPATH` set.

@@ -118,7 +118,18 @@ Remember to activate the Conda environment each time you work on this project.
 Several scripts under `src/` import sibling packages such as `services`, `face_tracking`, and `controller_adapters`, so once your environment is set up, run scripts from the repository root with `src` on your `PYTHONPATH`:
 
 ```bash
+# macOS/Linux
 PYTHONPATH=src python3 ./src/<folder>/<script_name>.py
+```
+
+```bat
+:: Windows Command Prompt
+set PYTHONPATH=src && python ./src/<folder>/<script_name>.py
+```
+
+```powershell
+# Windows PowerShell
+$env:PYTHONPATH = "src"; python ./src/<folder>/<script_name>.py
 ```
 
 See the root [README](../README.md#-exercises) for more details.
