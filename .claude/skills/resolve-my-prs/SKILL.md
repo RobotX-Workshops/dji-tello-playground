@@ -160,8 +160,10 @@ touches. Tools are pinned in requirements.txt (black, flake8, pytest).
 Run from the repo root and fix any failure before pushing:
 
   # NUL-delimited into an array so filenames with spaces, globs, or
-  # leading dashes can't be split or read as options.
-  mapfile -d '' CHANGED < <(git diff -z --name-only "origin/${DEFAULT_BRANCH}...HEAD" -- '*.py')
+  # leading dashes can't be split or read as options. --diff-filter=ACMR
+  # excludes deleted paths so black/flake8 aren't pointed at files that
+  # no longer exist.
+  mapfile -d '' CHANGED < <(git diff -z --diff-filter=ACMR --name-only "origin/${DEFAULT_BRANCH}...HEAD" -- '*.py')
   ((${#CHANGED[@]})) && black --check -- "${CHANGED[@]}"
   ((${#CHANGED[@]})) && flake8 --max-line-length 88 --extend-ignore E203,E402 -- "${CHANGED[@]}"
   pytest -q || [ $? -eq 5 ]   # exit 5 = "no tests collected" — fine today,

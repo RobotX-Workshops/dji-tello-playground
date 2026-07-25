@@ -69,5 +69,9 @@ Empty sections: `(none)`. Do not omit a heading.
 After this report, the orchestrator will rerun the reviewer over the
 new diff. Convergence is decided by the orchestrator (see
 `local-pr-review`): the reviewer returns zero `### Blocking` AND zero
-`### Non-blocking` findings (SUSPECT items are advisory) and you have
-a recorded verdict on every prior finding.
+`### Non-blocking` findings and you have a recorded verdict on every
+prior finding — **including every SUSPECT**. SUSPECT items are
+advisory for the convergence counts, but they never bypass your pass:
+a SUSPECT-only review still gets an implementer iteration that
+investigates and records a verdict for each one before the loop may
+settle.
