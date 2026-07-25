@@ -1,9 +1,18 @@
 # Drone Status Indicator States
 
-The best way to understand the different states of the drone status indicator is to see them in action. The following table lists the different states and their meanings.
+The table below lists the drone status indicator's colors and patterns and what each one means.
 
-- Blue LED: The blue LED is the main status indicator for charging states.
-- Red LED: The red LED is the main status indicator for the drone's Battery charge level.
-- Green/Yellow LED: The green/yellow and yellow states and there combination are general status indicators for the drone.
+| Category | Color | Pattern | Aircraft State |
+| --- | --- | --- | --- |
+| Normal States | Alternating red, green, and yellow | Blinking | Turning on and performing self-diagnostic tests |
+| Normal States | Green | Periodically blinks twice | Vision Positioning System active |
+| Normal States | Yellow | Blinking slowly | Vision Positioning System unavailable, aircraft is in Attitude mode |
+| Charging States | Blue | Solid | Charging is complete |
+| Charging States | Blue | Blinking slowly | Charging |
+| Charging States | Blue | Blinking quickly | Charging error |
+| Warning States | Yellow | Blinking quickly | Remote control signal lost |
+| Warning States | Red | Blinking slowly | Low battery |
+| Warning States | Red | Blinking quickly | Critically low battery |
+| Warning States | Red | Solid | Critical error |
 
-![charging_states](./images/status_indicator_states.png)
+![Drone status indicator states](./images/status_indicator_states.png)
