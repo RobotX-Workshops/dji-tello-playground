@@ -6,7 +6,7 @@ Instructions for AI coding agents (Claude Code, CodeRabbit, etc.) working in thi
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 <type>(<optional scope>): <short imperative description>
 ```
 

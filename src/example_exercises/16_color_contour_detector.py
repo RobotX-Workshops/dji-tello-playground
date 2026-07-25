@@ -51,27 +51,46 @@ UP_DOWN_SENSITIVITY = 0.2  # px offset -> up/down velocity
 CENTER_TOLERANCE = 40  # px: within this of center counts as "centered"
 MIN_TRACK_AREA = 500  # ignore blobs smaller than this for navigation
 
-# Global handles for the signal handler.
+# Max consecutive frame-read failures before giving up and shutting down.
+MAX_FRAME_FAILURES = 30
+
+# Global handles for the signal handler / cleanup.
 tello: Optional[Tello] = None
 cap: Optional[cv2.VideoCapture] = None
+took_off = False
+_shutdown_done = False
+
+
+def shutdown():
+    """Idempotent cleanup: zero RC, land if we took off, release everything."""
+    global _shutdown_done
+    if _shutdown_done:
+        return
+    _shutdown_done = True
+    if tello is not None and not DEBUG_MODE:
+        try:
+            tello.send_rc_control(0, 0, 0, 0)
+            if took_off:
+                print("Sending land command...")
+                tello.land()
+                print("✓ Drone landed safely")
+        except Exception as e:
+            print(f"Error during landing: {e}")
+        finally:
+            try:
+                tello.end()
+            except Exception as e:
+                print(f"Error ending Tello connection: {e}")
+    if cap is not None:
+        cap.release()
+    cv2.destroyAllWindows()
+    print("Cleanup complete.")
 
 
 def emergency_landing(signum=None, frame=None):
     """Land and clean up on Ctrl+C / termination."""
     print("\n⚠️  Emergency shutdown triggered!")
-    if tello is not None and not DEBUG_MODE:
-        try:
-            print("Sending emergency land command...")
-            tello.send_rc_control(0, 0, 0, 0)
-            tello.land()
-            tello.end()
-            print("✓ Drone landed safely")
-        except Exception as e:
-            print(f"Error during emergency landing: {e}")
-    if cap is not None:
-        cap.release()
-    cv2.destroyAllWindows()
-    print("Cleanup complete. Exiting...")
+    shutdown()
     sys.exit(0)
 
 
@@ -162,136 +181,152 @@ detector = ColorContourDetector(COLOR_PRESETS[START_COLOR])
 if not DEBUG_MODE and not NO_TAKEOFF:
     print("Taking off...")
     tello.takeoff()
+    took_off = True
     time.sleep(2)
 elif not DEBUG_MODE:
     print("NO_TAKEOFF mode - drone will stay on the ground")
 
 
 # --- Main loop -----------------------------------------------------------------
-while True:
-    if DEBUG_MODE:
-        ret, img = cap.read()
-        if not ret or img is None:
-            continue
-    else:
-        img = tello.get_frame_read().frame
+try:
+    frame_failures = 0
+    while True:
+        if DEBUG_MODE:
+            ret, img = cap.read()
+            if not ret or img is None:
+                img = None
+        else:
+            img = tello.get_frame_read().frame
+
         if img is None:
+            # Bounded retry: a dropped frame or two is normal, but a dead
+            # stream should exit the loop so the cleanup path runs.
+            frame_failures += 1
+            if frame_failures >= MAX_FRAME_FAILURES:
+                print("Video stream lost - shutting down.")
+                break
+            time.sleep(1 / 15)
             continue
-        # The Tello stream is RGB; convert to BGR for OpenCV color handling.
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        frame_failures = 0
 
-    height, width = img.shape[:2]
-    frame_center_x = width // 2
-    frame_center_y = height // 2
+        if not DEBUG_MODE:
+            # The Tello stream is RGB; convert to BGR for OpenCV color handling.
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-    # Re-read the color config each frame so the sliders apply live.
-    detector.config = read_config_from_trackbars(detector.config)
-    detections = detector.detect(img)
+        height, width = img.shape[:2]
+        frame_center_x = width // 2
+        frame_center_y = height // 2
 
-    # Draw the frame-center crosshair.
-    cv2.line(
-        img,
-        (frame_center_x - 20, frame_center_y),
-        (frame_center_x + 20, frame_center_y),
-        (255, 255, 255),
-        2,
-    )
-    cv2.line(
-        img,
-        (frame_center_x, frame_center_y - 20),
-        (frame_center_x, frame_center_y + 20),
-        (255, 255, 255),
-        2,
-    )
+        # Re-read the color config each frame so the sliders apply live.
+        detector.config = read_config_from_trackbars(detector.config)
+        detections = detector.detect(img)
 
-    detector.draw(img, detections)
-
-    yaw_velocity = 0
-    forward_velocity = 0
-    up_down_velocity = 0
-
-    largest = detections[0] if detections else None
-    if largest is not None and largest.area >= MIN_TRACK_AREA:
-        # Vector from target center to frame center (positive x = target left).
-        offset_x, offset_y = detector.offset_from_center(img, largest)
-
-        # Steer toward the target: turn/rise to reduce the offset.
-        yaw_velocity = int(-offset_x * YAW_SENSITIVITY)
-        up_down_velocity = int(offset_y * UP_DOWN_SENSITIVITY)
-        yaw_velocity = max(-100, min(100, yaw_velocity))
-        up_down_velocity = max(-100, min(100, up_down_velocity))
-
-        # Creep forward once roughly centered horizontally.
-        if abs(offset_x) < CENTER_TOLERANCE:
-            forward_velocity = FORWARD_SPEED
-
+        # Draw the frame-center crosshair.
         cv2.line(
-            img, (frame_center_x, frame_center_y), largest.center, (255, 0, 255), 2
-        )
-        cv2.putText(
             img,
-            f"Offset: ({offset_x}, {offset_y})",
-            (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.6,
+            (frame_center_x - 20, frame_center_y),
+            (frame_center_x + 20, frame_center_y),
             (255, 255, 255),
             2,
         )
-        cv2.putText(
+        cv2.line(
             img,
-            f"Yaw:{yaw_velocity} Fwd:{forward_velocity} " f"UpDn:{up_down_velocity}",
-            (10, 55),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.6,
+            (frame_center_x, frame_center_y - 20),
+            (frame_center_x, frame_center_y + 20),
             (255, 255, 255),
             2,
         )
-    else:
+
+        detector.draw(img, detections)
+
+        yaw_velocity = 0
+        forward_velocity = 0
+        up_down_velocity = 0
+
+        largest = detections[0] if detections else None
+        if largest is not None and largest.area >= MIN_TRACK_AREA:
+            # Vector from target center to frame center (positive x = target left).
+            offset_x, offset_y = detector.offset_from_center(img, largest)
+
+            # Steer toward the target: turn/rise to reduce the offset.
+            yaw_velocity = int(-offset_x * YAW_SENSITIVITY)
+            up_down_velocity = int(offset_y * UP_DOWN_SENSITIVITY)
+            yaw_velocity = max(-100, min(100, yaw_velocity))
+            up_down_velocity = max(-100, min(100, up_down_velocity))
+
+            # Creep forward once roughly centered horizontally.
+            if abs(offset_x) < CENTER_TOLERANCE:
+                forward_velocity = FORWARD_SPEED
+
+            cv2.line(
+                img, (frame_center_x, frame_center_y), largest.center, (255, 0, 255), 2
+            )
+            cv2.putText(
+                img,
+                f"Offset: ({offset_x}, {offset_y})",
+                (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (255, 255, 255),
+                2,
+            )
+            cv2.putText(
+                img,
+                f"Yaw:{yaw_velocity} Fwd:{forward_velocity} "
+                f"UpDn:{up_down_velocity}",
+                (10, 55),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (255, 255, 255),
+                2,
+            )
+        else:
+            cv2.putText(
+                img,
+                "No target detected",
+                (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 0, 255),
+                2,
+            )
+
+        # Status banner.
+        if DEBUG_MODE:
+            mode_text = "DEBUG MODE"
+        elif NO_TAKEOFF:
+            mode_text = "NO TAKEOFF"
+        else:
+            mode_text = "DRONE FLYING"
         cv2.putText(
             img,
-            "No target detected",
-            (10, 30),
+            mode_text,
+            (width - 200, 30),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.7,
-            (0, 0, 255),
+            (0, 255, 255),
+            2,
+        )
+        cv2.putText(
+            img,
+            f"Blobs: {len(detections)}",
+            (width - 200, 60),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            (0, 255, 255),
             2,
         )
 
-    # Status banner.
-    if DEBUG_MODE:
-        mode_text = "DEBUG MODE"
-    elif NO_TAKEOFF:
-        mode_text = "NO TAKEOFF"
-    else:
-        mode_text = "DRONE FLYING"
-    cv2.putText(
-        img,
-        mode_text,
-        (width - 200, 30),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (0, 255, 255),
-        2,
-    )
-    cv2.putText(
-        img,
-        f"Blobs: {len(detections)}",
-        (width - 200, 60),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (0, 255, 255),
-        2,
-    )
+        # Only send flight commands when actually airborne.
+        if not DEBUG_MODE and not NO_TAKEOFF:
+            tello.send_rc_control(0, forward_velocity, up_down_velocity, yaw_velocity)
 
-    # Only send flight commands when actually airborne.
-    if not DEBUG_MODE and not NO_TAKEOFF:
-        tello.send_rc_control(0, forward_velocity, up_down_velocity, yaw_velocity)
+        cv2.imshow(WINDOW, img)
+        time.sleep(1 / 15)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q") or key == 27:
+            break
 
-    cv2.imshow(WINDOW, img)
-    time.sleep(1 / 15)
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("q") or key == 27:
-        break
-
-print("\nShutting down...")
-emergency_landing()
+finally:
+    print("\nShutting down...")
+    shutdown()
