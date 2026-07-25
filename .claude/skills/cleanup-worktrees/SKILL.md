@@ -43,9 +43,13 @@ Remove stale git worktrees left behind by Claude Code agents.
    - If `/proc` exists **and** `/proc/<PID>` does **not** exist: PID is definitively dead.
      Now check whether the worktree directory still exists (`test -d <path>`):
      - If the **directory is present**: measure size with `du -sk <path>` (kilobytes,
-       portable) and record it for Step 6. Classify as **live-directory-stale** (see
-       Step 4's `git worktree remove --force --force` for the removal primitive), include
-       in cleanup candidates, and skip Step B entirely.
+       portable) and record it for Step 6. Extract the worktree name from the lock
+       reason and sub-classify exactly as the non-Linux dead-PID path does: verify
+       with `[[ <name> == agent-* ]]` and classify as **live-directory-stale (agent
+       orphan)** on a match, otherwise **live-directory-stale (named)** — named
+       entries require individual per-worktree confirmation and must not be
+       batch-deleted (see Step 4's `git worktree remove --force --force` for the
+       removal primitive). Include in cleanup candidates and skip Step B entirely.
      - If the **directory is absent**: the path is already gone but the admin files under
        `.git/worktrees/<name>/` remain — and because the `locked` file is still present,
        `git worktree prune` will not remove them (locking explicitly prevents pruning).
@@ -163,11 +167,22 @@ Remove stale git worktrees left behind by Claude Code agents.
      beforehand is the only way to prune a locked admin entry.)
 5. For every **gone-directory-locked** entry confirmed in Step 3, run
    `git worktree unlock <name>` to remove the lock file. Then — regardless of whether any
-   gone-directory-locked entries existed — run `git worktree prune` to clean up all dangling
-   admin references in `.git/worktrees/` (both unlocked gone-directory entries and any
-   just-unlocked locked ones). Do not conditionalize the prune on the existence of
-   gone-directory-locked entries: unlocked gone-directory worktrees also need pruning
-   and must not be skipped.
+   gone-directory-locked entries existed — prune the dangling admin references in
+   `.git/worktrees/` (both unlocked gone-directory entries and any just-unlocked locked
+   ones). `git worktree prune` is **repository-wide**: it would also drop admin entries
+   for missing worktrees outside `.claude/worktrees/` (e.g. a hand-made worktree whose
+   disk was temporarily unmounted). Gate it on a dry-run first:
+
+   ```bash
+   git worktree prune --dry-run -v
+   ```
+
+   Proceed with `git worktree prune` only if **every** path the dry-run reports is under
+   `.claude/worktrees/`. If any out-of-scope entry appears, skip the prune entirely and
+   report the out-of-scope paths to the user instead (the in-scope entries can be picked
+   up on a later run once the user has dealt with the out-of-scope ones). Do not
+   conditionalize the prune on the existence of gone-directory-locked entries: unlocked
+   gone-directory worktrees also need pruning and must not be skipped.
 6. Report total disk space reclaimed. Sum the `du -sk` values recorded in Step 2 —
    these are already in KiB (1024-byte blocks). Pick the largest unit where the result
    is ≥ 1, checking in descending order: prefer GiB when total ≥ 1048576 KiB, MiB when

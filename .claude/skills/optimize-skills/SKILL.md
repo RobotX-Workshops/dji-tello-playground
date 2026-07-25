@@ -54,17 +54,24 @@ For every markdown link `[text](path)` in every skill file:
 
 File a GitHub issue for each dead reference found (do not fix them inline — dead references indicate that source content moved, which may need a judgment call about where to redirect). For `§N` AGENTS.md links: `grep -n '^## ' AGENTS.md | grep -n .` to enumerate sections and confirm the cited number still matches the heading; mismatch is a dead reference.
 
-Use `gh issue create` (check for an existing open issue with the same title first to stay idempotent):
+Use `gh issue create` (check for an existing open issue with the same title first to stay idempotent). Populate the shell variables from the **actual finding** before running — never file an issue with literal placeholders, and note the heredoc is unquoted so the variables interpolate:
 
 ```bash
-TITLE="docs(<skill-file>): dead reference to <target>"
+# Set these from the concrete finding:
+SKILL_FILE=<skill dir name>        # e.g. resolve-pr
+TARGET=<link target>               # e.g. docs/agent-workflows/pr-resolution.md
+LINE=<line number in the SKILL.md>
+LINK='[<link text>](<link path>)'  # the exact dead link as written
+FIX_HINT='update link to <correct-path>, or remove if content was deleted'
+
+TITLE="docs(${SKILL_FILE}): dead reference to ${TARGET}"
 if ! gh issue list --state open --search "in:title \"${TITLE}\"" --json title \
-     | jq -e '.[] | select(.title == "'"${TITLE}"'")' >/dev/null; then
-  gh issue create --title "${TITLE}" --body "$(cat <<'EOF'
-- **Where**: .claude/skills/<skill>/SKILL.md:<line>
-- **Link**: [text](path)
+     | jq -e --arg t "${TITLE}" '.[] | select(.title == $t)' >/dev/null; then
+  gh issue create --title "${TITLE}" --body "$(cat <<EOF
+- **Where**: .claude/skills/${SKILL_FILE}/SKILL.md:${LINE}
+- **Link**: ${LINK}
 - **Problem**: target file/section does not exist
-- **Fix**: update link to <correct-path>, or remove if content was deleted
+- **Fix**: ${FIX_HINT}
 EOF
 )"
 fi
@@ -157,10 +164,20 @@ done
 # Parse each report for the "Branch: <branch>" line:
 WAVE1_BRANCHES=()
 for report in "${WAVE1_REPORTS[@]}"; do
-  branch=$(echo "$report" | grep '^Branch:' | awk '{print $2}')
+  branch=$(echo "$report" | grep -m1 '^Branch:' | awk '{print $2}')
   [ -n "$branch" ] || continue  # failed agent — no valid Branch: line; skip
+  # Reject malformed refnames from garbled reports before they reach git:
+  git check-ref-format --branch "$branch" >/dev/null 2>&1 || continue
   WAVE1_BRANCHES+=("$branch")
 done
+
+# Wave 2's contract is "audit the *compressed* files". With zero valid
+# branches it would audit the uncompressed originals off origin/main —
+# abort instead of dispatching it.
+if [ ${#WAVE1_BRANCHES[@]} -eq 0 ]; then
+  echo "ERROR: no Wave 1 agent produced a valid branch — aborting before Wave 2" >&2
+  exit 1
+fi
 
 # --- Dispatch Wave 2 ---
 # Substitute ${OWNER}, ${REPO}, and ${WAVE1_BRANCHES} (as a space-separated
@@ -259,15 +276,21 @@ Pass 3 — Dead reference audit:
   for the heading; for `AGENTS.md §N` links, enumerate AGENTS.md `^## `
   headings and confirm the cited number still matches).
 - File a GitHub issue for each dead reference (idempotent — skip if an
-  open issue with the same title already exists):
-    TITLE="docs(<skill-file>): dead reference to <target>"
+  open issue with the same title already exists). Set SKILL_FILE, TARGET,
+  LINE, LINK, and FIX_HINT from the actual finding first — never file an
+  issue containing literal placeholders, and keep the heredoc unquoted so
+  the variables interpolate:
+    SKILL_FILE=<skill dir name>; TARGET=<link target>; LINE=<line number>
+    LINK='[<link text>](<link path>)'
+    FIX_HINT='update link to <correct-path>, or remove if content was deleted'
+    TITLE="docs(${SKILL_FILE}): dead reference to ${TARGET}"
     if ! gh issue list --state open --search "in:title \"${TITLE}\"" --json title \
-         | jq -e '.[] | select(.title == "'"${TITLE}"'")' >/dev/null; then
-      gh issue create --title "${TITLE}" --body "$(cat <<'EOF'
-    - **Where**: .claude/skills/<skill>/SKILL.md:<line>
-    - **Link**: [text](path)
+         | jq -e --arg t "${TITLE}" '.[] | select(.title == $t)' >/dev/null; then
+      gh issue create --title "${TITLE}" --body "$(cat <<EOF
+    - **Where**: .claude/skills/${SKILL_FILE}/SKILL.md:${LINE}
+    - **Link**: ${LINK}
     - **Problem**: target file/section does not exist
-    - **Fix**: update link to <correct-path>, or remove if content was deleted
+    - **Fix**: ${FIX_HINT}
     EOF
     )"
     fi
@@ -289,7 +312,7 @@ only acceptable pre-push command; C++ hooks require ROS 2 sourced first):
   git push -u origin HEAD
 
 Open a PR for all changes (idempotent — skip creation if a PR already exists for this branch):
-  EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number -q '.[0].number' 2>/dev/null)
+  EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number -q '.[0].number // empty' 2>/dev/null)
   if [ -n "$EXISTING_PR" ]; then
     PR_URL=$(gh pr view "$EXISTING_PR" --json url -q .url)
     echo "PR already exists: $PR_URL"

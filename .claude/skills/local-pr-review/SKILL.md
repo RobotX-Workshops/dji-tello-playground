@@ -76,9 +76,12 @@ the user sees each turn live). Prompt body:
 ```text
 You are running inside an isolated git worktree off branch ${BRANCH}.
 Read the adversarial reviewer prompt at .claude/prompts/adversarial_reviewer.md
-and follow it exactly. The diff under review:
+and follow it exactly. The diff under review (commit-to-working-tree form —
+the implementer's edits from earlier iterations are deliberately left
+uncommitted in this worktree, and a two-endpoint `${BASE_REF}..${HEAD_REF}`
+diff would never show them):
 
-  git diff ${BASE_REF}..${HEAD_REF}
+  git diff ${BASE_REF}
 
 Iteration: ${ITER} of max ${MAX_ITER}.
 Previous iterations' findings + implementer verdicts are in HISTORY.md
@@ -146,8 +149,11 @@ inspect, decide, and re-push.
 
 When converged:
 
-1. In the worktree, stage every edit the implementer made:
-   `git add -A`.
+1. In the worktree, delete the loop transcript first — it is scratch
+   state and must never ship: `rm -f HISTORY.md`. Then stage every edit
+   the implementer made: `git add -A`. (Without the delete, `git add -A`
+   would stage `HISTORY.md` and push every review transcript with the
+   branch.)
 2. If the worktree's index is non-empty, amend onto a single fixup
    commit: `git commit --no-verify -m "fixup! adversarial review
    iteration loop"`. (`--no-verify` is intentional here — pre-commit

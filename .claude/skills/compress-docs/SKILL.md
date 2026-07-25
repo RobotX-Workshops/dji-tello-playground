@@ -168,7 +168,7 @@ Notes: <one line — e.g. "hit 31% reduction" or "capped at 18%: all remaining p
 
 After all agents report back:
 
-0. **Handle partial failure.** Collect all agent reports. An agent that crashed, failed pre-commit, or failed to push will not produce a valid `Branch:` line. For each such agent, note the file as `SKIPPED`. If any files were skipped, include them in the PR body under a `## Skipped files` heading with a one-line reason per file. Do not silently omit skipped files. If all agents failed, abort and print the list of failures instead of opening a PR.
+0. **Handle partial failure.** Collect all agent reports. An agent that crashed, failed pre-commit, or failed to push will not produce a valid `Branch:` line. For each such agent, note the file as `SKIPPED` — collect one `"<file>: <reason>"` entry per failure into a `SKIPPED[]` array (consumed when building the PR body in step 1). If any files were skipped, include them in the PR body under a `## Skipped files` heading with a one-line reason per file. Do not silently omit skipped files. If all agents failed, abort and print the list of failures instead of opening a PR.
 
 1. Aggregate all branches. Each agent pushed its own branch. Collect branch names only from reports that contain a valid `Branch:` line — skip empty or malformed values (those agents are already tracked as `SKIPPED` in step 0). If no valid branches remain, abort and print the failure list instead of continuing. The outer orchestrator then cherry-picks the valid agent commits onto a single dedicated branch and opens one PR:
 
@@ -176,31 +176,55 @@ After all agents report back:
    # Collect branch names from agent reports, dropping failed agents
    BRANCHES=()
    for report in "${REPORTS[@]}"; do
-     branch=$(echo "$report" | grep '^Branch:' | awk '{print $2}')
+     branch=$(echo "$report" | grep -m1 '^Branch:' | awk '{print $2}')
      [ -n "$branch" ] || continue   # failed/SKIPPED agent — no valid Branch: line
+     # Reject malformed refnames from garbled reports before they reach git:
+     git check-ref-format --branch "$branch" >/dev/null 2>&1 || continue
      BRANCHES+=("$branch")
    done
    [ ${#BRANCHES[@]} -gt 0 ] || { echo "All agents failed — nothing to aggregate"; exit 1; }
-   # Create (or reuse, on rerun) the single integration branch
+   # Fetch first so origin/main, the agent branches, and any pre-existing
+   # remote integration branch are all fresh before branch selection
+   git fetch origin
+   # Drop agent branches whose remote ref doesn't actually exist
+   VERIFIED=()
+   for branch in "${BRANCHES[@]}"; do
+     git rev-parse --verify --quiet "refs/remotes/origin/${branch}" >/dev/null \
+       && VERIFIED+=("$branch") || echo "WARN: origin/${branch} missing — skipping"
+   done
+   BRANCHES=("${VERIFIED[@]}")
+   [ ${#BRANCHES[@]} -gt 0 ] || { echo "No agent branch exists on origin — nothing to aggregate"; exit 1; }
+   # Create (or reuse, on rerun) the single integration branch, then reset it
+   # to the base: a rerun must rebuild the batch from origin/main, otherwise
+   # re-cherry-picking already-applied commits produces empty picks/conflicts
+   # and aborts the batch
    if git show-ref --verify --quiet refs/heads/docs/compress-batch; then
      git checkout docs/compress-batch
    else
      git checkout -b docs/compress-batch origin/main
    fi
-   # Fetch all agent branches (they exist on origin, not as local refs)
-   git fetch origin
+   git reset --hard origin/main
    # Cherry-pick each valid agent's commit
    for branch in "${BRANCHES[@]}"; do
      git cherry-pick "origin/${branch}" || { git cherry-pick --abort; exit 1; }
    done
-   git push -u origin docs/compress-batch
+   # Force-with-lease because reruns rebuild the branch from origin/main;
+   # the lease is against the origin/docs/compress-batch ref fetched above
+   git push --force-with-lease -u origin docs/compress-batch
+   # Build the PR body, honouring the step-0 partial-failure contract:
+   # skipped files must appear under a "## Skipped files" heading
+   PR_BODY="Batch compression pass. No information removed — only filler prose, redundant restatements, and motivational language stripped. See per-file reduction stats in the PR description."
+   if [ ${#SKIPPED[@]} -gt 0 ]; then       # SKIPPED[] filled in step 0: "<file>: <reason>" per entry
+     PR_BODY+=$'\n\n## Skipped files\n'
+     for entry in "${SKIPPED[@]}"; do PR_BODY+="- ${entry}"$'\n'; done
+   fi
    # Reuse an existing open PR on rerun instead of creating a duplicate
    if [ -z "$(gh pr list --head docs/compress-batch --state open --json number --jq '.[].number')" ]; then
      gh pr create \
        --base main \
        --head docs/compress-batch \
        --title "docs: compress documentation for token efficiency" \
-       --body "Batch compression pass. No information removed — only filler prose, redundant restatements, and motivational language stripped. See per-file reduction stats in the PR description."
+       --body "$PR_BODY"
    fi
    ```
 

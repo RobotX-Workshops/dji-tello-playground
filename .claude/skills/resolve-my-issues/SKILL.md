@@ -347,8 +347,10 @@ Phase 3 — implement (fresh branch path).
     # invocation crashed after `git push -u` but before `gh pr create`
     # acked (or returned an open PR for the same head), short-circuit
     # and reuse the existing PR URL instead of opening a duplicate.
+    # `// empty` matters: on an empty result `.[0].url` prints the literal
+    # string "null", which would wrongly satisfy the -n guard below.
     existing_pr=$(gh pr list --head "issue-${N}-<slug>" --state open \
-                    --json url -q '.[0].url')
+                    --json url -q '.[0].url // empty')
     if [ -n "${existing_pr}" ]; then
       echo "duplicate PR for branch; reusing ${existing_pr}"
     else
