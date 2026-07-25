@@ -94,9 +94,18 @@ Parse the `bot-review-marker` HTML comment:
 blocking=(\d+) nonblocking=(\d+) suspect=(\d+)
 ```
 
-If `blocking == 0` AND `nonblocking == 0` (suspect items are advisory):
-**converged**. Print `=== CONVERGED at iteration ${ITER} ===`, jump to
-step 6.
+If `blocking == 0` AND `nonblocking == 0` AND every SUSPECT finding in
+this iteration already has a recorded implementer verdict in
+`HISTORY.md`: **converged**. Print `=== CONVERGED at iteration
+${ITER} ===`, jump to step 6.
+
+If the blocking/nonblocking counts are zero but one or more SUSPECT
+findings lack a verdict, do NOT settle yet — SUSPECT is advisory for
+the counts, but it never skips the implementer's investigation. Run
+step 5 so the implementer investigates each SUSPECT and records a
+verdict. If that pass makes no code edits, treat the loop as converged
+when it returns; if it does edit files, loop to step 3 as usual so the
+reviewer sees the new diff.
 
 If the reviewer's findings are byte-identical to the previous
 iteration's findings: **stable disagreement**. Print the unresolved
@@ -139,10 +148,18 @@ When converged:
    touching (the `FIXED <file:line>` lines in `HISTORY.md`), then
    delete `HISTORY.md` (it's loop scratch, not PR content). Stage
    exactly the reported files with `git add -- <file>...` — never
-   `git add -A`. If `git status --porcelain` still shows modified or
-   untracked files after that, stop and surface them to the user
-   instead of staging; stray agent artifacts must not ride into the
-   commit.
+   `git add -A`. Then check for strays among **unstaged and untracked
+   paths only** — the just-staged allowlisted files legitimately show
+   as staged, so a bare `git status --porcelain` would false-positive
+   on a successful fixup:
+
+   ```bash
+   strays=$(git diff --name-only; git ls-files --others --exclude-standard)
+   ```
+
+   If `strays` is non-empty, stop and surface the list to the user
+   instead of staging more; stray agent artifacts must not ride into
+   the commit.
 2. If the worktree's index is non-empty, fold the loop's work into a
    single commit: `git commit -m "fixup! adversarial review iteration
    loop"` (the user squashes it when merging).
