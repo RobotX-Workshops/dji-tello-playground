@@ -322,8 +322,9 @@ try:
             tello.send_rc_control(0, forward_velocity, up_down_velocity, yaw_velocity)
 
         cv2.imshow(WINDOW, img)
-        time.sleep(1 / 15)
-        key = cv2.waitKey(1) & 0xFF
+        # The ~66ms wait also caps the loop to ~15 FPS, making a separate
+        # time.sleep(1 / 15) redundant.
+        key = cv2.waitKey(66) & 0xFF
         if key == ord("q") or key == 27:
             break
 

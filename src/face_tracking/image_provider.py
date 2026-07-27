@@ -3,8 +3,10 @@ import cv2
 
 try:
     from open_cv_wrapper import OpenCvWrapper
+    from image_compression_service import ImageCompressionService
 except ModuleNotFoundError:
     from face_tracking.open_cv_wrapper import OpenCvWrapper
+    from face_tracking.image_compression_service import ImageCompressionService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +37,7 @@ class ImageProvider:
         )
         self.compression = compression
         self.open_cv = open_cv
+        self._compression_service = ImageCompressionService(open_cv)
 
     def connect_to_camera(self, id: int = 0):
         """
@@ -58,12 +61,6 @@ class ImageProvider:
         if not self.cap.isOpened():
             raise Exception("Camera is not connected")
 
-        compression = self.compression
         _, frame = self.cap.read()
-        # Get the image height and width
 
-        compressed_image = self.open_cv.resize(
-            frame, (0, 0), fx=1 / compression, fy=1 / compression
-        )
-
-        return compressed_image
+        return self._compression_service.compress_image(frame, self.compression)

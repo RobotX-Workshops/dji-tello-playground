@@ -344,9 +344,9 @@ while True:
         tello.send_rc_control(left_right, forward_backward, up_down, -yaw)
 
     cv2.imshow("Circle Detection", img)
-    time.sleep(1 / 15)
-    # Press 'q' or ESC to quit
-    key = cv2.waitKey(1) & 0xFF
+    # Press 'q' or ESC to quit; the ~66ms wait also caps the loop to ~15 FPS,
+    # making a separate time.sleep(1 / 15) redundant.
+    key = cv2.waitKey(66) & 0xFF
     if key == ord("q") or key == 27:
         break
 

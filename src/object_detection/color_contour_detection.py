@@ -119,6 +119,10 @@ class ColorContourDetector:
         frame = detector.draw(frame_bgr, detections)  # overlay boxes
     """
 
+    # Reused across every `create_mask` call instead of being reallocated
+    # per-frame - the kernel is a fixed 5x5 constant regardless of config.
+    _MORPH_KERNEL = np.ones((5, 5), np.uint8)
+
     def __init__(self, config: ColorContourConfig):
         self.config = config
 
@@ -159,9 +163,8 @@ class ColorContourDetector:
             mask = cv2.bitwise_or(mask, mask2)
 
         # Morphological open/close cleans up ragged edges and fills pinholes.
-        morph_kernel = np.ones((5, 5), np.uint8)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, morph_kernel)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, morph_kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, self._MORPH_KERNEL)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self._MORPH_KERNEL)
         return mask
 
     def detect(self, img_bgr: cv2.typing.MatLike) -> List[ColorContour]:
