@@ -74,8 +74,6 @@ def get_tello_control(controller_arg: str) -> TelloController:
             tello_controller_adapter = _CONTROLLER_ID_CLASS_MAPPING[controller_type](pygame_connector)
         except KeyError:
             raise ValueError(f"Unsupported controller type for auto detection: {controller_arg}")
-    elif controller_arg.lower() == "keyboard":
-        tello_controller_adapter = KeyboardControlAdapter(pygame_connector)
     else:
         # Auto-detect controller via joystick initialization
         try:
