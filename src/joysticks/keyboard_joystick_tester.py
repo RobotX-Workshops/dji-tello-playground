@@ -17,6 +17,7 @@ def main() -> None:
     pygame.display.set_caption("Keyboard as Joystick")
 
     # Game loop
+    clock = pygame.time.Clock()
     running = True
     while running:
         # Handle events
@@ -25,8 +26,13 @@ def main() -> None:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 print(f"Joystick action: {event}")
+                if event.key == pygame.K_q:
+                    running = False
             elif event.type == pygame.KEYUP:
                 print(f"Joystick action released: {event}")
+
+        # Cap the loop at 60 iterations/sec so it doesn't busy-spin the CPU
+        clock.tick(60)
 
     # Quit the game
     pygame.quit()
