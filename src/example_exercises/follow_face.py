@@ -131,6 +131,7 @@ while True:
         break
 
 tello_service.streamoff()
+cv2.destroyAllWindows()
 
 LOGGER.info("Landing")
 # Land
