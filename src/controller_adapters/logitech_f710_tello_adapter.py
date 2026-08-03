@@ -12,7 +12,7 @@ from .utils import run_adapter_test
 
 
 class LogitechF710ControlAdapter(BaseGamepadTelloAdapter):
-    def __init__(self, controller: LogitechF710Joystick):
+    def __init__(self, controller: LogitechF710Joystick) -> None:
         super().__init__(controller)
 
 

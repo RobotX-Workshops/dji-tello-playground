@@ -1,10 +1,15 @@
-from typing import List
+from typing import Protocol
 
+from joysticks.game_controller_type import GameControllerState
 from services.tello_controller import (
     TelloActionType,
     TelloControlState,
     TelloController,
 )
+
+
+class GamepadController(Protocol):
+    def get_state(self) -> GameControllerState: ...
 
 
 class BaseGamepadTelloAdapter(TelloController):
@@ -15,7 +20,7 @@ class BaseGamepadTelloAdapter(TelloController):
     so the Tello button/axis mapping below is identical across adapters.
     """
 
-    def __init__(self, controller):
+    def __init__(self, controller: GamepadController) -> None:
         self.controller = controller
 
     def t(self, controller_axis_value: float) -> int:
@@ -28,7 +33,7 @@ class BaseGamepadTelloAdapter(TelloController):
         pressed_buttons = controller_state.buttons.get_pressed_buttons()
         d_pad = controller_state.d_pad
 
-        events: List[TelloActionType] = []
+        events: list[TelloActionType] = []
         if "Y" in pressed_buttons:
             events.append(TelloActionType.TAKEOFF)
         if "A" in pressed_buttons:

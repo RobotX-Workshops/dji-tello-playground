@@ -12,7 +12,7 @@ from .utils import run_adapter_test
 
 
 class GC102TelloControlAdapter(BaseGamepadTelloAdapter):
-    def __init__(self, controller: GC102PyGameController):
+    def __init__(self, controller: GC102PyGameController) -> None:
         super().__init__(controller)
 
 

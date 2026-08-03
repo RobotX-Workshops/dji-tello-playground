@@ -12,7 +12,7 @@ from .utils import run_adapter_test
 
 
 class XboxTelloControlAdapter(BaseGamepadTelloAdapter):
-    def __init__(self, controller: XboxPyGameController):
+    def __init__(self, controller: XboxPyGameController) -> None:
         super().__init__(controller)
 
 

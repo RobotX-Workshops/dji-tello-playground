@@ -12,7 +12,7 @@ from .utils import run_adapter_test
 
 
 class TectInterJoystickControlAdapter(BaseGamepadTelloAdapter):
-    def __init__(self, controller: TectInterJoystick):
+    def __init__(self, controller: TectInterJoystick) -> None:
         super().__init__(controller)
 
 
