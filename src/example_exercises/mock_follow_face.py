@@ -117,3 +117,6 @@ while True:
 
     if open_cv.listen_for_key(1) & 0xFF == ord("q"):
         break
+
+cam.release()
+cv2.destroyAllWindows()

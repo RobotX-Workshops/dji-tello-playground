@@ -1,7 +1,5 @@
 from djitellopy import Tello
 
-import time
-
 from services.tello_connector import TelloConnector
 
 # Create a Tello instance
