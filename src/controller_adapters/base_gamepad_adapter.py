@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from joysticks.game_controller_type import GameControllerState
+from joysticks.game_controller import GameControllerState
 from services.tello_controller import (
     TelloActionType,
     TelloControlState,

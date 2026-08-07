@@ -5,10 +5,10 @@ script_dir = os.path.dirname(__file__)
 parent_dir = os.path.join(script_dir, "..")
 sys.path.append(parent_dir)
 
-from src.joysticks.logitech_f710_controller import LogitechF710Joystick
+from joysticks.logitech_f710_controller import LogitechF710Joystick
 from joysticks.pygame_connector import PyGameConnector
-from .base_gamepad_adapter import BaseGamepadTelloAdapter
-from .utils import run_adapter_test
+from controller_adapters.base_gamepad_adapter import BaseGamepadTelloAdapter
+from controller_adapters.utils import run_adapter_test
 
 
 class LogitechF710ControlAdapter(BaseGamepadTelloAdapter):

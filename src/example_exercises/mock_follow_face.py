@@ -18,7 +18,7 @@ from face_tracking.utils.positioning_utils import (
     get_frame_center_xy,
     get_vector_xyz,
 )
-from src.controller_adapters.follow_face_controller import FaceFollowingController
+from controller_adapters.follow_face_controller import FaceFollowingController
 
 
 args = argparse.ArgumentParser()

@@ -7,8 +7,8 @@ sys.path.append(parent_dir)
 
 from joysticks.pygame_connector import PyGameConnector
 from joysticks.xbox_one_controller import XboxOnePyGameController
-from .base_gamepad_adapter import BaseGamepadTelloAdapter
-from .utils import run_adapter_test
+from controller_adapters.base_gamepad_adapter import BaseGamepadTelloAdapter
+from controller_adapters.utils import run_adapter_test
 
 
 class XboxOneTelloControlAdapter(BaseGamepadTelloAdapter):

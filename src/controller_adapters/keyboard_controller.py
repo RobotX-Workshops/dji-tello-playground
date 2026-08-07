@@ -14,7 +14,7 @@ from services.tello_controller import (
     TelloControlState,
     TelloController,
 )
-from .utils import run_adapter_test
+from controller_adapters.utils import run_adapter_test
 
 _LOGGER = logging.getLogger(__name__)
 

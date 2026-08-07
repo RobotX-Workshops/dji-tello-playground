@@ -16,3 +16,5 @@ The table below lists the drone status indicator's colors and patterns and what 
 | Warning States | Red | Solid | Critical error |
 
 ![Drone status indicator states](./images/status_indicator_states.png)
+
+> **Note:** "Yellow, blinking quickly" is context-dependent. Before you've connected to the drone's WiFi, this pattern instead means the drone is powered on and ready to pair (see the [connection guide](./setup_drone_connection.md)); the "Remote control signal lost" meaning above applies once you're already connected and flying.
