@@ -18,7 +18,7 @@ You can download Visual Studio Code from [this link](https://code.visualstudio.c
 
 Before starting, ensure you have Python 3.11 installed (the project is developed and tested against 3.11).
 
-You can download from [here for Windows](https://apps.microsoft.com/detail/9nrwmjp3717k?hl=en-US&gl=US) version or the official site [here](https://www.python.org/downloads/) for other platforms — any Python 3.11.x patch release works.
+For Windows, download Python from the [Microsoft Store](https://apps.microsoft.com/detail/9nrwmjp3717k?hl=en-US&gl=US). For other platforms, use the [official Python downloads page](https://www.python.org/downloads/). Any Python 3.11.x patch release works.
 
 Make sure the python path is added to the system environment variables. You can check this by running the following command in your terminal:
 
