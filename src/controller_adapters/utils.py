@@ -1,7 +1,7 @@
 
 import os
 import time
-from src.services.tello_controller import TelloController
+from services.tello_controller import TelloController
 
 def print_state(state_dict: dict, indent=""):
     for k, v in state_dict.items():

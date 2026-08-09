@@ -1,7 +1,7 @@
 """
 This file contains the class for the Tectinter Ali Express Controller.
 https://de.aliexpress.com/item/32824692489.html?spm=a2g0o.order_list.order_list_main.5.49305c5fYhRXjs&gatewayAdapt=glo2deu
-![Here](./images/ali_express_controller.jpg)
+![Here](../../docs/images/ali_express_controller.jpeg)
 """
 
 from dataclasses import dataclass, fields

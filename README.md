@@ -104,10 +104,13 @@ If you encounter an error like `client_socket.bind(("", Tello.CONTROL_UDP_PORT))
 
 3. **Restart your computer** if the above doesn't work - this will clear all stuck processes.
 
-4. **Use debug mode** for testing without connecting to the drone. Currently only the circle-detector exercise supports this:
+4. **Use debug mode** for testing without connecting to the drone. The circle-detector exercise reads this from an environment variable:
+
    ```bash
    DEBUG_MODE=true PYTHONPATH=src python3 ./src/example_exercises/15_circle_dectector.py
    ```
+
+   `16_color_contour_detector.py` has the same debug/no-takeoff behavior, but as constants you edit in the script instead of an environment variable — see [`src/example_exercises/README.md`](./src/example_exercises/README.md).
 
 ## 🐞 Debugging with Visual Studio Code
 
