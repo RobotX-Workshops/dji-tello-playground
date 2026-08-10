@@ -63,7 +63,7 @@ def process_tracking_frame(
     # Write the control state information on the frame
     open_cv.write_text(
         frame,
-        f"Forward: {control_state.forward_velocity},"
+        f"Forward: {control_state.forward_velocity}, "
         f"Move Right: {control_state.right_velocity}, "
         f"Up: {control_state.up_velocity}, "
         f"Yaw Right: {control_state.yaw_right_velocity}",
