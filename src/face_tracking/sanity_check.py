@@ -12,6 +12,7 @@ from image_drawing_service import ImageDrawingService
 from image_compression_service import ImageCompressionService
 from recognition_face_identifier import RecognitionFaceIdentifier
 from open_cv_wrapper import OpenCvWrapper
+import cv2
 import logging
 import argparse
 from utils.positioning_utils import (
@@ -93,3 +94,4 @@ while True:
         break
 
 cam.release()
+cv2.destroyAllWindows()

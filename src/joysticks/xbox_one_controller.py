@@ -59,13 +59,10 @@ class XboxOnePyGameController(GameController):
 if __name__ == "__main__":
     import os
 
-    def print_state(state_dict, indent=""):
-        for k, v in state_dict.items():
-            if isinstance(v, dict):
-                print(f"{indent}{k}:")
-                print_state(v, indent + "  ")
-            else:
-                print(f"{indent}{k}: {v}")
+    try:
+        from joysticks.utils import print_state
+    except ModuleNotFoundError:
+        from utils import print_state
 
     log_level = logging.DEBUG
     logging.basicConfig(level=log_level)
