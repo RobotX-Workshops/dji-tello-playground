@@ -52,11 +52,13 @@ def process_tracking_frame(
     frame = image_drawer.draw_frame_center_cross_hair(frame, 2, 20, "red")
 
     logger.debug(
-        f"Closest face at {frame_center_xyz, closest_center} with distance {closest_distance}"
+        "Closest face at %s with distance %s",
+        (frame_center_xyz, closest_center),
+        closest_distance,
     )
 
     control_state = controller.get_state(vector_to_center)
-    height, width = frame.shape[:2]
+    height = frame.shape[0]
     bottom = height - 10
     left = 10
 
