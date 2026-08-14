@@ -27,6 +27,18 @@ def process_tracking_frame(
     faces_trbl = face_identifier.identify_faces(frame)
     if not faces_trbl:
         logger.debug("No faces")
+        # Keep the preview alive even with no face in frame so the window
+        # refreshes and the caller's quit-key handling still runs.
+        open_cv.write_text(
+            frame,
+            "No face detected",
+            (10, frame.shape[0] - 10),
+            cv2.FONT_HERSHEY_DUPLEX,
+            0.5,
+            (255, 255, 255),
+            1,
+        )
+        open_cv.show_image("frame", frame)
         return None
 
     frame_center_xyz = (*get_frame_center_xy(frame), depth_target)
