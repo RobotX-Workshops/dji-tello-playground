@@ -10,8 +10,7 @@ The `Controller` abstract base class defines the interface for getting the curre
 The `XboxPyGameJoystick` class is a concrete implementation of the `Controller` interface using the PyGame library.
 """
 
-from dataclasses import dataclass, fields
-from typing import List
+from dataclasses import dataclass
 from enum import Enum
 import logging
 import time
@@ -88,9 +87,6 @@ class ButtonPressedState(ControllerButtonPressedState):
     SHARE: bool
     LEFT_STICK: bool
     RIGHT_STICK: bool
-
-    def get_pressed_buttons(self) -> List[str]:
-        return [field.name for field in fields(self) if getattr(self, field.name)]
 
 
 class MacXboxPyGameJoystick(GameController):

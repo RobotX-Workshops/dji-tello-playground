@@ -2,15 +2,7 @@
 import os
 import time
 from services.tello_controller import TelloController
-
-def print_state(state_dict: dict, indent=""):
-    for k, v in state_dict.items():
-        if isinstance(v, dict):
-            print(f"{indent}{k}:")
-            print_state(v, indent + "  ")
-        else:
-            print(f"{indent}{k}: {v}")
-
+from joysticks.utils import print_state
 
 
 def run_adapter_test(contoller: TelloController) -> None:

@@ -4,11 +4,10 @@ https://de.aliexpress.com/item/32824692489.html?spm=a2g0o.order_list.order_list_
 ![Here](../../docs/images/ali_express_controller.jpeg)
 """
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from enum import Enum
 import time
 import logging
-from typing import List
 
 
 try:
@@ -77,9 +76,6 @@ class _ButtonPressedState(ControllerButtonPressedState):
     HOME: bool
     LEFT_STICK: bool
     RIGHT_STICK: bool
-
-    def get_pressed_buttons(self) -> List[str]:
-        return [field.name for field in fields(self) if getattr(self, field.name)]
 
 
 class TectInterJoystick:
