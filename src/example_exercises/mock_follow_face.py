@@ -54,11 +54,12 @@ while True:
         LOGGER.debug("No frame")
         continue
 
-    control_state = process_tracking_frame(
+    # process_tracking_frame refreshes the preview (with or without a face);
+    # control_state is None when no face is tracked. The mock does not dispatch
+    # to a drone, so we only need to keep handling the quit key every frame.
+    process_tracking_frame(
         frame, face_identifier, image_drawer, controller, open_cv, DEPTH_TARGET, LOGGER
     )
-    if control_state is None:
-        continue
 
     # dispatcher.send_commands(control_state)
 

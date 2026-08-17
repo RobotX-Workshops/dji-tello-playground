@@ -12,7 +12,19 @@ import logging
 import argparse
 from services.tello_command_dispatcher import TelloCommandDispatcher
 from services.tello_connector import TelloConnector
+from services.tello_controller import TelloControlState
 from controller_adapters.follow_face_controller import FaceFollowingController
+
+
+# Zero-velocity state used to hover in place when no face is tracked, rather
+# than leaving the drone on whatever velocity the last tracked face produced.
+HOVER_STATE = TelloControlState(
+    right_velocity=0,
+    forward_velocity=0,
+    up_velocity=0,
+    yaw_right_velocity=0,
+    events=[],
+)
 
 
 args = argparse.ArgumentParser()
@@ -69,10 +81,10 @@ while True:
     control_state = process_tracking_frame(
         frame, face_identifier, image_drawer, controller, open_cv, DEPTH_TARGET, LOGGER
     )
-    if control_state is None:
-        continue
 
-    dispatcher.send_commands(control_state)
+    # No face tracked this frame: hover in place instead of holding the last
+    # velocity. The preview and quit key are still handled below either way.
+    dispatcher.send_commands(control_state if control_state is not None else HOVER_STATE)
 
     if open_cv.listen_for_key(1) & 0xFF == ord("q"):
         break
