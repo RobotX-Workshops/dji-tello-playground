@@ -6,10 +6,9 @@ Confirmed working on Windows and Linux systems.
    
 """
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 import time
 import logging
-from typing import List
 from enum import Enum
 
 try:
@@ -76,9 +75,6 @@ class _ControllerButtonPressedState(ControllerButtonPressedState):
     Start: bool
     LEFT_STICK: bool
     RIGHT_STICK: bool
-
-    def get_pressed_buttons(self) -> List[str]:
-        return [field.name for field in fields(self) if getattr(self, field.name)]
 
 
 class LogitechF710Joystick:

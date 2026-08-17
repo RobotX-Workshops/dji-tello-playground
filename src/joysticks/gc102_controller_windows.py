@@ -2,8 +2,7 @@
 This module contains the implementation of a General "GC102 Wireless" controller that works with windows systems.
 """
 
-from dataclasses import dataclass, fields
-from typing import List
+from dataclasses import dataclass
 from enum import Enum
 import logging
 import time
@@ -77,9 +76,6 @@ class _ButtonPressedState(ControllerButtonPressedState):
     LEFT_STICK: bool
     RIGHT_STICK: bool
     HOME: bool
-
-    def get_pressed_buttons(self) -> List[str]:
-        return [field.name for field in fields(self) if getattr(self, field.name)]
 
 
 # Button keys that are not assigned to any button on the controller

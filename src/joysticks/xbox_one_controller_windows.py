@@ -10,8 +10,7 @@ It provides classes for handling the controller's axes, buttons, and D-pad state
 The `Controller` abstract base class defines the interface for getting the current controller state.
 """
 
-from dataclasses import dataclass, fields
-from typing import List
+from dataclasses import dataclass
 from enum import Enum
 import logging
 import sys
@@ -85,9 +84,6 @@ class ButtonPressedState(ControllerButtonPressedState):
     SCREENSHOT: bool
     LEFT_STICK: bool
     RIGHT_STICK: bool
-
-    def get_pressed_buttons(self) -> List[str]:
-        return [field.name for field in fields(self) if getattr(self, field.name)]
 
 
 class WindowsXboxOnePyGameJoystick(GameController):

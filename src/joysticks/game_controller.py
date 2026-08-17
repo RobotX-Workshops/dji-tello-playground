@@ -31,9 +31,8 @@ class ControllerDPadState:
 
 
 class ControllerButtonPressedState(ABC):
-    @abstractmethod
     def get_pressed_buttons(self) -> List[str]:
-        pass
+        return [field.name for field in fields(self) if getattr(self, field.name)]
 
 
 @dataclass
