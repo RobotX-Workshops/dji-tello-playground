@@ -105,6 +105,14 @@ enforce_workdir_location() {
   # repository boundary -- inspecting (and potentially rejecting on) parent
   # directories that have nothing to do with the workdir.
   local tmp_unresolved="$REPO_ROOT/tmp"
+  # Also reject a symlink AT $REPO_ROOT/tmp itself. The walk below terminates at
+  # $tmp_unresolved WITHOUT inspecting it, so if tmp/ is a link to an external
+  # directory, `tmp/run` resolves below that directory and passes the canonical
+  # containment test while every later write follows the unchecked link -- and a
+  # retarget after this check reopens the race. A genuine tmp/ directory is not a
+  # symlink, so this rejects only the escape.
+  [[ ! -L "$tmp_unresolved" ]] \
+    || die "workdir root is a symlink: $tmp_unresolved. Containment cannot be guaranteed through a link whose target may change after this check."
   local probe="$resolved"
   while [[ "$probe" != "/" && -n "$probe" && "$probe" != "$tmp_root" && "$probe" != "$tmp_unresolved" ]]; do
     if [[ -L "$probe" ]]; then

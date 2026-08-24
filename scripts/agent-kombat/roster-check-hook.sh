@@ -22,7 +22,7 @@ status=0
 # runs pre-commit, and a stray .roster-check.err inside the source tree can be
 # staged by a `git add -A` in another hook. The trap covers the early-exit and
 # interrupt paths the old unconditional `rm -f` missed.
-ERR_FILE="$(mktemp -t agent-kombat-roster-check)"
+ERR_FILE="$(mktemp "${TMPDIR:-/tmp}/agent-kombat-roster-check.XXXXXX")"
 cleanup_err_file() { rm -f "$ERR_FILE"; }
 trap cleanup_err_file EXIT INT TERM
 

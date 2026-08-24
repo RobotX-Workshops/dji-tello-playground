@@ -98,6 +98,14 @@ opencode_agent_proven() {
   # no timeout(1), so poll a deadline and kill the whole tree (the CLIs spawn
   # children that outlive a plain kill).
   local budget="${AGENT_KOMBAT_CANARY_TIMEOUT:-120}"
+  # A non-integer here is not merely wrong, it is dangerous: under `set -u` the
+  # `[[ "$waited" -ge "$budget" ]]` poll below evaluates $budget in arithmetic
+  # context, where `not_a_number` is a name reference that aborts the shell on an
+  # unbound variable, `1+1` silently means 2, and `-1` fires the timeout on the
+  # first tick. Validate AFTER applying the default and refuse anything that is
+  # not a bare non-negative integer (0 stays legal).
+  [[ "$budget" =~ ^[0-9]+$ ]] \
+    || die "AGENT_KOMBAT_CANARY_TIMEOUT must be a non-negative integer (got: '$budget')"
   opencode run "Reply with exactly: ok" \
     --agent "$want" -m "$model" ${variant_args[@]+"${variant_args[@]}"} --format json \
     </dev/null >"$probe_out" 2>&1 &
