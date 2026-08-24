@@ -92,3 +92,18 @@ class GameController(ABC):
 def apply_dead_zone(value: float, dead_zone: float) -> float:
     """Zeroes out axis noise/drift smaller than the dead zone threshold."""
     return 0.0 if abs(value) < dead_zone else value
+
+
+def read_stick_state(
+    joystick, horizontal_axis: int, vertical_axis: int, dead_zone: float
+) -> StickState:
+    """Reads one analog stick's two axes and applies the dead zone to each."""
+    return StickState(
+        horizontal_right=apply_dead_zone(joystick.get_axis(horizontal_axis), dead_zone),
+        vertical_down=apply_dead_zone(joystick.get_axis(vertical_axis), dead_zone),
+    )
+
+
+def read_axis(joystick, axis: int, dead_zone: float) -> float:
+    """Reads a single axis (e.g. an analog trigger) and applies the dead zone."""
+    return apply_dead_zone(joystick.get_axis(axis), dead_zone)

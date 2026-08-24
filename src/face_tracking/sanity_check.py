@@ -15,12 +15,12 @@ from open_cv_wrapper import OpenCvWrapper
 import cv2
 import logging
 import argparse
-from utils.positioning_utils import (
-    get_box_center_xyz,
-    get_distance_xyz,
-    get_frame_center_xy,
-    get_vector_xyz,
-)
+from utils.positioning_utils import get_vector_xyz
+
+try:
+    from tracking_frame_processor import locate_and_draw_closest_face
+except ModuleNotFoundError:
+    from face_tracking.tracking_frame_processor import locate_and_draw_closest_face
 
 
 args = argparse.ArgumentParser()
@@ -57,31 +57,17 @@ while True:
         LOGGER.debug("No faces")
         continue
 
-    frame_center_xyz = (*get_frame_center_xy(frame), DEPTH_TARGET)
-
-    closest = None
-    for face_trbl in faces_trbl:
-        box_center = get_box_center_xyz(face_trbl, DEPTH_TARGET)
-        distance = get_distance_xyz(frame_center_xyz, box_center)
-        if closest is None or distance < closest[1]:
-            closest = (face_trbl, distance, box_center)
-        frame = image_drawer.draw_box(
-            frame,
-            face_trbl,
-            "green",
-            f"{box_center}",
-        )
-        frame = image_drawer.draw_cross_hair_in_box(frame, face_trbl, 4, "green")
-
-    assert closest is not None
-    closest_box = closest[0]
-    closest_distance = closest[1]
-    closest_center = closest[2]
+    (
+        frame,
+        closest_box,
+        closest_distance,
+        closest_center,
+        frame_center_xyz,
+    ) = locate_and_draw_closest_face(
+        frame, faces_trbl, image_drawer, DEPTH_TARGET, label_each_face=True
+    )
 
     vector_to_center = get_vector_xyz(frame_center_xyz, closest_center)
-
-    frame = image_drawer.draw_box(frame, closest_box, "red")
-    frame = image_drawer.draw_frame_center_cross_hair(frame, 2, 20, "red")
 
     LOGGER.debug(
         f"Closest face at {frame_center_xyz, closest_center} with distance {closest_distance}"
