@@ -82,7 +82,7 @@ def process_tracking_frame(
 
     (
         frame,
-        closest_box,
+        _closest_box,
         closest_distance,
         closest_center,
         frame_center_xyz,

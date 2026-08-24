@@ -115,6 +115,7 @@ CENTER_TOLERANCE = 30  # Pixel tolerance for centering (roughly 5% of a typical 
 MAX_FRAME_FAILURES = 30
 
 frame_failures = 0
+last_drone_frame = None
 
 while True:
     # Get camera frame from drone or debug camera
@@ -124,6 +125,13 @@ while True:
             img = None
     else:
         img = tello.get_frame_read().frame
+        if img is last_drone_frame:
+            # BackgroundFrameRead.frame never goes back to None once the
+            # stream dies - it just keeps returning the same array object,
+            # so detect a dead stream by identity instead of by None-ness.
+            img = None
+        else:
+            last_drone_frame = img
 
     if img is None:
         # Bounded retry: a dropped frame or two is normal, but a dead
