@@ -8,7 +8,7 @@
       "id": "opus",
       "label": "Participant A",
       "harness": "claude",
-      "model": "claude-opus-5",
+      "model": "opus",
       "structured_output": "native",
       "idle_timeout_seconds": 900
     },
@@ -28,7 +28,7 @@
     "id": "judge",
     "label": "Judge",
     "harness": "claude",
-    "model": "claude-opus-5",
+    "model": "opus",
     "structured_output": "native",
     "idle_timeout_seconds": 900
   }
