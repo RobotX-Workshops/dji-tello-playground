@@ -10,35 +10,34 @@ It provides classes for handling the controller's axes, buttons, and D-pad state
 The `Controller` abstract base class defines the interface for getting the current controller state.
 """
 
-from dataclasses import dataclass
+import logging
 import sys
 import time
-import logging
+from dataclasses import dataclass
 from enum import Enum
 
-
 try:
-    from joysticks.pygame_connector import PyGameConnector
     from joysticks.game_controller import (
-        GameController,
         ControllerAxesState,
-        ControllerDPadState,
-        GameControllerState,
-        StickState,
         ControllerButtonPressedState,
-        apply_dead_zone,
+        ControllerDPadState,
+        GameController,
+        GameControllerState,
+        read_axis,
+        read_stick_state,
     )
+    from joysticks.pygame_connector import PyGameConnector
 except ModuleNotFoundError:
-    from pygame_connector import PyGameConnector
     from game_controller import (
-        GameController,
         ControllerAxesState,
-        ControllerDPadState,
-        GameControllerState,
-        StickState,
         ControllerButtonPressedState,
-        apply_dead_zone,
+        ControllerDPadState,
+        GameController,
+        GameControllerState,
+        read_axis,
+        read_stick_state,
     )
+    from pygame_connector import PyGameConnector
 
 
 LOGGER = logging.getLogger(__name__)
@@ -96,7 +95,6 @@ class LinuxXboxOnePyGameJoystick(GameController):
     """
 
     def __init__(self, pygame_connector: PyGameConnector, joystick_id: int = 0):
-
         if "linux" not in sys.platform.lower():
             raise ValueError(f"Linux adapter is being used on a {sys.platform} system")
 
@@ -130,43 +128,25 @@ class LinuxXboxOnePyGameJoystick(GameController):
     def get_state(self) -> GameControllerState:
         self.pygame_connector.get_events()
 
-        left_stick_horizontal = self.joystick.get_axis(
-            _AxisKeys.LEFT_STICK_HORIZONTAL.value
-        )
-        left_stick_vertical = self.joystick.get_axis(
-            _AxisKeys.LEFT_STICK_VERTICAL.value
-        )
-        right_stick_horizontal = self.joystick.get_axis(
-            _AxisKeys.RIGHT_STICK_HORIZONTAL.value
-        )
-        right_stick_vertical = self.joystick.get_axis(
-            _AxisKeys.RIGHT_STICK_VERTICAL.value
-        )
-        left_analog_trigger = self.joystick.get_axis(
-            _AxisKeys.LEFT_ANALOG_TRIGGER.value
-        )
-        right_analog_trigger = self.joystick.get_axis(
-            _AxisKeys.RIGHT_ANALOG_TRIGGER.value
-        )
-
-        left_stick_horizontal = apply_dead_zone(left_stick_horizontal, self.dead_zone)
-        left_stick_vertical = apply_dead_zone(left_stick_vertical, self.dead_zone)
-        right_stick_horizontal = apply_dead_zone(right_stick_horizontal, self.dead_zone)
-        right_stick_vertical = apply_dead_zone(right_stick_vertical, self.dead_zone)
-        left_analog_trigger = apply_dead_zone(left_analog_trigger, self.dead_zone)
-        right_analog_trigger = apply_dead_zone(right_analog_trigger, self.dead_zone)
-
         axes = ControllerAxesState(
-            left_stick=StickState(
-                horizontal_right=left_stick_horizontal,
-                vertical_down=left_stick_vertical,
+            left_stick=read_stick_state(
+                self.joystick,
+                _AxisKeys.LEFT_STICK_HORIZONTAL.value,
+                _AxisKeys.LEFT_STICK_VERTICAL.value,
+                self.dead_zone,
             ),
-            right_stick=StickState(
-                horizontal_right=right_stick_horizontal,
-                vertical_down=right_stick_vertical,
+            right_stick=read_stick_state(
+                self.joystick,
+                _AxisKeys.RIGHT_STICK_HORIZONTAL.value,
+                _AxisKeys.RIGHT_STICK_VERTICAL.value,
+                self.dead_zone,
             ),
-            left_analog_trigger=left_analog_trigger,
-            right_analog_trigger=right_analog_trigger,
+            left_analog_trigger=read_axis(
+                self.joystick, _AxisKeys.LEFT_ANALOG_TRIGGER.value, self.dead_zone
+            ),
+            right_analog_trigger=read_axis(
+                self.joystick, _AxisKeys.RIGHT_ANALOG_TRIGGER.value, self.dead_zone
+            ),
         )
 
         buttons = _ButtonPressedState(

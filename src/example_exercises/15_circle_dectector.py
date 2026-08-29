@@ -111,16 +111,38 @@ YAW_SENSITIVITY = 0.01  # Rotation sensitivity
 TARGET_RADIUS_MIN = 1  # Minimum radius to consider for navigation
 CENTER_TOLERANCE = 30  # Pixel tolerance for centering (roughly 5% of a typical 640px-wide frame; `width` isn't known yet at this point)
 
+# Max consecutive frame-read failures before giving up and shutting down.
+MAX_FRAME_FAILURES = 30
+
+frame_failures = 0
+last_drone_frame = None
+
 while True:
     # Get camera frame from drone or debug camera
     if DEBUG_MODE:
         ret, img = cap.read()
         if not ret or img is None:
-            continue
+            img = None
     else:
         img = tello.get_frame_read().frame
-        if img is None:
-            continue
+        if img is last_drone_frame:
+            # BackgroundFrameRead.frame never goes back to None once the
+            # stream dies - it just keeps returning the same array object,
+            # so detect a dead stream by identity instead of by None-ness.
+            img = None
+        else:
+            last_drone_frame = img
+
+    if img is None:
+        # Bounded retry: a dropped frame or two is normal, but a dead
+        # stream should exit the loop so the cleanup path runs.
+        frame_failures += 1
+        if frame_failures >= MAX_FRAME_FAILURES:
+            print("Video stream lost - shutting down.")
+            break
+        time.sleep(1 / 15)
+        continue
+    frame_failures = 0
 
     # Get frame dimensions
     height, width = img.shape[:2]

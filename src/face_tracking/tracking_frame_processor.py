@@ -12,6 +12,45 @@ from face_tracking.utils.positioning_utils import (
 )
 
 
+def locate_and_draw_closest_face(
+    frame,
+    faces_trbl,
+    image_drawer,
+    depth_target: int,
+    label_each_face: bool = False,
+):
+    """Draws every candidate face and picks the one closest to frame center.
+
+    Returns `(frame, closest_box, closest_distance, closest_center, frame_center_xyz)`.
+    `faces_trbl` must be non-empty.
+    """
+    frame_center_xyz = (*get_frame_center_xy(frame), depth_target)
+
+    closest = None
+    for face_trbl in faces_trbl:
+        box_center = get_box_center_xyz(face_trbl, depth_target)
+        distance = get_distance_xyz(frame_center_xyz, box_center)
+        if closest is None or distance < closest[1]:
+            closest = (face_trbl, distance, box_center)
+        frame = image_drawer.draw_box(
+            frame,
+            face_trbl,
+            "green",
+            f"{box_center}" if label_each_face else "",
+        )
+        frame = image_drawer.draw_cross_hair_in_box(frame, face_trbl, 4, "green")
+
+    assert (
+        closest is not None
+    ), "locate_and_draw_closest_face() requires at least one face"
+    closest_box, closest_distance, closest_center = closest
+
+    frame = image_drawer.draw_box(frame, closest_box, "red")
+    frame = image_drawer.draw_frame_center_cross_hair(frame, 2, 20, "red")
+
+    return frame, closest_box, closest_distance, closest_center, frame_center_xyz
+
+
 def process_tracking_frame(
     frame,
     face_identifier,
@@ -41,27 +80,15 @@ def process_tracking_frame(
         open_cv.show_image("frame", frame)
         return None
 
-    frame_center_xyz = (*get_frame_center_xy(frame), depth_target)
-
-    closest = None
-    for face_trbl in faces_trbl:
-        box_center = get_box_center_xyz(face_trbl, depth_target)
-        distance = get_distance_xyz(frame_center_xyz, box_center)
-        if closest is None or distance < closest[1]:
-            closest = (face_trbl, distance, box_center)
-        frame = image_drawer.draw_box(
-            frame,
-            face_trbl,
-            "green",
-        )
-        frame = image_drawer.draw_cross_hair_in_box(frame, face_trbl, 4, "green")
-
-    closest_box, closest_distance, closest_center = closest
+    (
+        frame,
+        _closest_box,
+        closest_distance,
+        closest_center,
+        frame_center_xyz,
+    ) = locate_and_draw_closest_face(frame, faces_trbl, image_drawer, depth_target)
 
     vector_to_center = get_vector_xyz(frame_center_xyz, closest_center)
-
-    frame = image_drawer.draw_box(frame, closest_box, "red")
-    frame = image_drawer.draw_frame_center_cross_hair(frame, 2, 20, "red")
 
     logger.debug(
         "Closest face at %s with distance %s",

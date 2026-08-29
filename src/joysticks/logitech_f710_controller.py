@@ -6,31 +6,29 @@ Confirmed working on Windows and Linux systems.
    
 """
 
-from dataclasses import dataclass
-import time
 import logging
+import time
+from dataclasses import dataclass
 from enum import Enum
 
 try:
-    from joysticks.pygame_connector import PyGameConnector
     from joysticks.game_controller import (
         ControllerAxesState,
-        StickState,
-        GameControllerState,
         ControllerButtonPressedState,
         ControllerDPadState,
-        apply_dead_zone,
+        GameControllerState,
+        read_stick_state,
     )
+    from joysticks.pygame_connector import PyGameConnector
 except ModuleNotFoundError:
-    from pygame_connector import PyGameConnector
     from game_controller import (
         ControllerAxesState,
-        StickState,
-        GameControllerState,
         ControllerButtonPressedState,
         ControllerDPadState,
-        apply_dead_zone,
+        GameControllerState,
+        read_stick_state,
     )
+    from pygame_connector import PyGameConnector
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -114,32 +112,18 @@ class LogitechF710Joystick:
     def get_state(self) -> GameControllerState:
         self.pygame_connector.get_events()
 
-        left_stick_horizontal = self.joystick.get_axis(
-            _AxisKeys.LEFT_STICK_HORIZONTAL.value
-        )
-        left_stick_vertical = self.joystick.get_axis(
-            _AxisKeys.LEFT_STICK_VERTICAL.value
-        )
-        right_stick_horizontal = self.joystick.get_axis(
-            _AxisKeys.RIGHT_STICK_HORIZONTAL.value
-        )
-        right_stick_vertical = self.joystick.get_axis(
-            _AxisKeys.RIGHT_STICK_VERTICAL.value
-        )
-
-        left_stick_horizontal = apply_dead_zone(left_stick_horizontal, self.dead_zone)
-        left_stick_vertical = apply_dead_zone(left_stick_vertical, self.dead_zone)
-        right_stick_horizontal = apply_dead_zone(right_stick_horizontal, self.dead_zone)
-        right_stick_vertical = apply_dead_zone(right_stick_vertical, self.dead_zone)
-
         axes = ControllerAxesState(
-            left_stick=StickState(
-                horizontal_right=left_stick_horizontal,
-                vertical_down=left_stick_vertical,
+            left_stick=read_stick_state(
+                self.joystick,
+                _AxisKeys.LEFT_STICK_HORIZONTAL.value,
+                _AxisKeys.LEFT_STICK_VERTICAL.value,
+                self.dead_zone,
             ),
-            right_stick=StickState(
-                horizontal_right=right_stick_horizontal,
-                vertical_down=right_stick_vertical,
+            right_stick=read_stick_state(
+                self.joystick,
+                _AxisKeys.RIGHT_STICK_HORIZONTAL.value,
+                _AxisKeys.RIGHT_STICK_VERTICAL.value,
+                self.dead_zone,
             ),
             left_analog_trigger=float(
                 self.joystick.get_button(_ButtonKeys.LeftTrigger.value)
