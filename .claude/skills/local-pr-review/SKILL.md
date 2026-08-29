@@ -21,12 +21,15 @@ with the outstanding findings — never as a pass.
 
 ## Inputs
 
-Caller may pass `BASE_REF` and `HEAD_REF` via env. If absent:
+Caller may pass `BASE_REF` and `HEAD_REF` via env. Resolve `HEAD_REF` first —
+`BASE_REF`, `BRANCH`, and the banner all derive from it, so a caller-supplied
+`HEAD_REF` must not fall back to the current checkout:
 
 ```bash
-BASE_REF=${BASE_REF:-$(git merge-base HEAD origin/main)}
 HEAD_REF=${HEAD_REF:-HEAD}
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+git fetch origin main
+BASE_REF=${BASE_REF:-$(git merge-base "$HEAD_REF" origin/main)}
+BRANCH=$(git rev-parse --abbrev-ref "$HEAD_REF")
 ```
 
 ## Flow
@@ -34,9 +37,13 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 ### 1. Pre-flight
 
 - Refuse to run on `main` — there's no PR concept.
-- `git fetch origin main` so the merge-base is fresh.
+- `origin main` was already fetched while resolving `BASE_REF` above, so
+  the merge-base is fresh by the time this step runs.
 - Show a one-line banner: `=== LOCAL ADVERSARIAL REVIEW: ${BRANCH}
-  (BASE..HEAD = ${BASE_REF:0:7}..${HEAD_REF:0:7}) ===`.
+  (BASE..HEAD = $(git rev-parse --short "$BASE_REF")..$(git rev-parse
+  --short "$HEAD_REF")) ===`. (Resolve via `rev-parse` — substring
+  slicing like `${HEAD_REF:0:7}` prints garbage for symbolic refs such
+  as `HEAD` or `origin/main`.)
 
 ### 2. Worktree
 
@@ -67,9 +74,12 @@ the user sees each turn live). Prompt body:
 ```text
 You are running inside an isolated git worktree off branch ${BRANCH}.
 Read the adversarial reviewer prompt at .claude/prompts/adversarial_reviewer.md
-and follow it exactly. The diff under review:
+and follow it exactly. The diff under review (commit-to-working-tree form —
+the implementer's edits from earlier iterations are deliberately left
+uncommitted in this worktree, and a two-endpoint `${BASE_REF}..${HEAD_REF}`
+diff would never show them):
 
-  git diff ${BASE_REF}..${HEAD_REF}
+  git diff ${BASE_REF}
 
 Iteration: ${ITER} of max ${MAX_ITER}.
 Previous iterations' findings + implementer verdicts are in HISTORY.md
@@ -109,7 +119,9 @@ reviewer sees the new diff.
 
 If the reviewer's findings are byte-identical to the previous
 iteration's findings: **stable disagreement**. Print the unresolved
-list and stop with a clear report so the user can review and decide.
+list and stop with exit status 2 so a hook or wrapper surfaces it to
+the user ("reviewer and implementer can't agree — review the report
+and decide whether to bypass").
 
 ### 5. Implementer pass
 
@@ -137,8 +149,9 @@ Print `=== ITERATION ${ITER} — IMPLEMENTER ===` banner. Increment
 ### 6. Hard cap
 
 `MAX_ITER = 5` (override with `LOCAL_REVIEW_MAX_ITER=N`). If reached
-without convergence, print the outstanding findings and stop. Do not
-loop forever — the user can inspect, decide, and push anyway.
+without convergence, print the outstanding findings and stop with exit
+status 2. Do not loop forever — the user can inspect, decide, and push
+anyway.
 
 ### 7. Settling the worktree back into the original branch
 
@@ -161,8 +174,10 @@ When converged:
    instead of staging more; stray agent artifacts must not ride into
    the commit.
 2. If the worktree's index is non-empty, fold the loop's work into a
-   single commit: `git commit -m "fixup! adversarial review iteration
-   loop"` (the user squashes it when merging).
+   single commit: `git commit --no-verify -m "fixup! adversarial review
+   iteration loop"`. (`--no-verify` is intentional here — pre-commit
+   hooks are about *intent*, this commit is a mechanical re-shape of
+   the diff the user is about to push.)
 3. Back in the main checkout, fast-forward `${BRANCH}` to the
    worktree's HEAD: `git fetch <worktree-path> HEAD:${BRANCH}` (or
    `git update-ref refs/heads/${BRANCH} <new-sha>` if the main
@@ -174,9 +189,18 @@ When converged:
 
 ## Outputs
 
-- Converged → report "passed", branch fast-forwarded if edits were made.
-- Stable disagreement or iteration cap → report the outstanding
-  findings; the user decides whether to fix by hand or push anyway.
+- Exit 0 → converged (or bypassed), branch fast-forwarded if edits were made.
+- Exit 2 → unresolved findings (stable disagreement or iteration cap);
+  the user decides whether to fix by hand or push anyway.
+- Exit non-zero non-2 → setup error (no worktree, no `claude` binary,
+  blocked-active-worktree, etc.).
+
+## Bypass channels
+
+- `CLAUDE_LOCAL_REVIEW=0` env — skill exits 0 immediately when set.
+- `git push --no-verify` — git skips pre-push hooks entirely (there are
+  none wired in this repo today, but the flag is a universal bypass).
+- Caller may pass `LOCAL_REVIEW_MAX_ITER=N` to override the iteration cap.
 
 ## Ground rules
 

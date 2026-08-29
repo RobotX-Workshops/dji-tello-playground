@@ -4,6 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+# Cancel the in-flight review when a newer push supersedes it — each run is a
+# 30-minute job, so letting stale reviews finish just burns runners.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   # secrets-gate: `pull_request` runs from forks have no access to repository
   # secrets, so a job that needs CLAUDE_CODE_OAUTH_TOKEN would fail rather than
@@ -30,6 +36,7 @@ jobs:
     needs: secrets-gate
     if: ${{ needs.secrets-gate.outputs.ok == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       # write on pull-requests + issues so `gh pr comment` (issues-comments
@@ -41,9 +48,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        # Pinned to actions/checkout@v5; bump deliberately as a separate
-        # commit so the diff shows the version change in isolation.
-        uses: actions/checkout@v5
+        # Pinned to the commit SHA behind the v5 tag (v5.0.1) per the same
+        # supply-chain hardening guidance as claude-code-action below.
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd  # v5
         with:
           fetch-depth: 1
           # Don't persist GITHUB_TOKEN in .git/config: this job hands a
@@ -88,4 +95,6 @@ jobs:
           # src/object_detection/README.md before writing the review.
           # Without them the reviewer can only see what `gh pr diff/view`
           # returns, which is not enough to verify convention findings.
-          claude_args: '--allowed-tools "Read,Grep,Glob,Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+          # --model pins the reviewer to Haiku 4.5 to stay inside the Claude
+          # Code plan quota; bump deliberately if review quality regresses.
+          claude_args: '--model claude-haiku-4-5-20251001 --allowed-tools "Read,Grep,Glob,Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
