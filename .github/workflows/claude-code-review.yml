@@ -16,7 +16,8 @@ jobs:
   # skip. Job-level `if:` conditions can't reference `secrets.*` directly, so we
   # check the secret here, emit an output, and gate `claude-review` on it.
   secrets-gate:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, ARM64, rpi]
+    timeout-minutes: 5
     permissions: {}
     outputs:
       ok: ${{ steps.check.outputs.ok }}
@@ -35,7 +36,7 @@ jobs:
   claude-review:
     needs: secrets-gate
     if: ${{ needs.secrets-gate.outputs.ok == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, ARM64, rpi]
     timeout-minutes: 30
     permissions:
       contents: read
