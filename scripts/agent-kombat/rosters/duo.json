@@ -1,0 +1,35 @@
+{
+  "id": "duo",
+  "description": "TWO MODELS TOTAL: two debaters over 2 rounds (up to 1 extra round on the judge's request), with one debater's model reused as the judge in a separate fresh session. The cheapest useful roster, and the only one that needs just two model vendors -- reach for it when Codex is unavailable or when the debate transcript matters more than the verdict. The trade-off is explicit: because the judge reuses one debater's model, it is session-independent but NOT model-independent and may systematically favour that participant's plan. The driver prints that warning (naming the shared model) on every run. Use rosters/trio.json when the verdict itself is the deliverable and must be defensible. Labels shown in prompts are deliberately anonymous ('Participant A/B'): no participant, and no judge, is TOLD which model wrote which plan in the prompt text it receives.",
+  "rounds": 2,
+  "max_extra_rounds": 1,
+  "debaters": [
+    {
+      "id": "opus",
+      "label": "Participant A",
+      "harness": "claude",
+      "model": "opus",
+      "structured_output": "native",
+      "idle_timeout_seconds": 900
+    },
+    {
+      "id": "deepseek",
+      "label": "Participant B",
+      "harness": "opencode",
+      "model": "deepseek/deepseek-v4-pro",
+      "structured_output": "fenced_json",
+      "idle_timeout_seconds": 1200,
+      "variant": "high",
+      "agent": "kombat-debater",
+      "max_reask": 1
+    }
+  ],
+  "judge": {
+    "id": "judge",
+    "label": "Judge",
+    "harness": "claude",
+    "model": "opus",
+    "structured_output": "native",
+    "idle_timeout_seconds": 900
+  }
+}

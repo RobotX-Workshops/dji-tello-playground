@@ -11,3 +11,7 @@ __pycache__/
 .DS_Store
 Icon
 artifacts
+
+# agent-kombat debate run dir (no trailing slash: the driver runs
+# `git check-ignore -q tmp` before the dir exists, and `tmp/` would not match)
+/tmp
