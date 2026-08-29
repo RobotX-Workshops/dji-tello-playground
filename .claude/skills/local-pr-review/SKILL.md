@@ -1,6 +1,6 @@
 ---
 name: local-pr-review
-description: Run the adversarial Claude review locally in a git worktree before a push, looping reviewer ↔ implementer until consensus. Drop-in replacement for the GitHub Actions claude-code-review run so CI runner minutes aren't burned on every PR sync. Invoked by the pre-push hook and the gh-pr-create wrapper, but also runnable as /local-pr-review.
+description: Run the adversarial Claude review locally in a git worktree before a push, looping reviewer ↔ implementer until consensus. Local counterpart of the claude-code-review GitHub workflow so findings surface before CI runner minutes are burned. Run as /local-pr-review against the current branch.
 ---
 
 # local-pr-review
@@ -9,15 +9,15 @@ Mirror of [.github/workflows/claude-code-review.yml](../../../.github/workflows/
 run locally, in an isolated git worktree, with the implementer agent in
 the same session pushing back on weak findings and fixing real ones.
 Loops until reviewer and implementer agree, then fast-forwards the
-original branch and exits 0 so the push proceeds.
+original branch and reports success. Non-convergence (stable
+disagreement or the iteration cap) is always reported as a failure
+with the outstanding findings — never as a pass.
 
 ## When to use
 
-- Pre-push hook fires this automatically when pushing a branch that has
-  an open PR (see [bin/pre_push_claude_review.sh](../../../bin/pre_push_claude_review.sh)).
-- [bin/gh-pr-create-with-review.sh](../../../bin/gh-pr-create-with-review.sh)
-  fires it before creating a new PR.
-- Manually as `/local-pr-review` against the current branch.
+- Manually as `/local-pr-review` against the current branch, before
+  pushing a branch that has (or is about to get) an open PR.
+- This repo has no pre-push hook wiring; invocation is always manual.
 
 ## Inputs
 
@@ -44,28 +44,26 @@ BRANCH=$(git rev-parse --abbrev-ref "$HEAD_REF")
   --short "$HEAD_REF")) ===`. (Resolve via `rev-parse` — substring
   slicing like `${HEAD_REF:0:7}` prints garbage for symbolic refs such
   as `HEAD` or `origin/main`.)
-- Print the bypass hint: `Bypass with CLAUDE_LOCAL_REVIEW=0 or git push
-  --no-verify.`
 
 ### 2. Worktree
 
-Reuse the worktree pattern from
-[.claude/skills/resolve-my-prs/SKILL.md](../resolve-my-prs/SKILL.md):
-each `Agent` call uses `isolation: "worktree"`. The worktree is
+Each `Agent` call uses `isolation: "worktree"`. The worktree is
 checked out to `HEAD_REF`. No manual `git worktree add` from the skill.
 
-If the current branch is already checked out in another worktree, abort
-with `blocked-active-worktree` so the user resolves by hand. Parse the
-porcelain output structurally (exact-match the branch ref — a regex
-`grep` misfires on branch names with metacharacters or shared prefixes):
+If the current branch is already checked out in another worktree,
+abort with `blocked-active-worktree` so the user resolves by hand.
+`--porcelain` output pairs each `worktree <path>` line with its
+`branch` line, so parse the pairs and compare paths — a bare grep for
+the branch line can't tell which worktree it belongs to:
 
 ```bash
-git worktree list --porcelain \
-  | awk -v ref="refs/heads/${BRANCH}" -v cur="$(git rev-parse --show-toplevel)" \
-      '/^worktree /{wt=substr($0,10)} $0=="branch "ref && wt!=cur{print wt}'
+current=$(git rev-parse --show-toplevel)
+other=$(git worktree list --porcelain \
+  | awk -v ref="branch refs/heads/${BRANCH}" \
+      '/^worktree /{p=substr($0,10)} $0==ref{print p}' \
+  | grep -vFx "$current" || true)
+[ -n "$other" ] && echo "blocked-active-worktree: $other" && stop
 ```
-
-Non-empty output means another worktree has `${BRANCH}` checked out.
 
 ### 3. Reviewer pass
 
@@ -106,15 +104,24 @@ Parse the `bot-review-marker` HTML comment:
 blocking=(\d+) nonblocking=(\d+) suspect=(\d+)
 ```
 
-If `blocking == 0` AND `nonblocking == 0` (suspect items are advisory):
-**converged**. Print `=== CONVERGED at iteration ${ITER} ===`, jump to
-step 6.
+If `blocking == 0` AND `nonblocking == 0` AND every SUSPECT finding in
+this iteration already has a recorded implementer verdict in
+`HISTORY.md`: **converged**. Print `=== CONVERGED at iteration
+${ITER} ===`, jump to step 6.
+
+If the blocking/nonblocking counts are zero but one or more SUSPECT
+findings lack a verdict, do NOT settle yet — SUSPECT is advisory for
+the counts, but it never skips the implementer's investigation. Run
+step 5 so the implementer investigates each SUSPECT and records a
+verdict. If that pass makes no code edits, treat the loop as converged
+when it returns; if it does edit files, loop to step 3 as usual so the
+reviewer sees the new diff.
 
 If the reviewer's findings are byte-identical to the previous
 iteration's findings: **stable disagreement**. Print the unresolved
-list and exit with status 2 so the hook surfaces it to the user
-("reviewer and implementer can't agree — review the report and decide
-whether to bypass").
+list and stop with exit status 2 so a hook or wrapper surfaces it to
+the user ("reviewer and implementer can't agree — review the report
+and decide whether to bypass").
 
 ### 5. Implementer pass
 
@@ -141,21 +148,33 @@ Print `=== ITERATION ${ITER} — IMPLEMENTER ===` banner. Increment
 
 ### 6. Hard cap
 
-`MAX_ITER = 5`. If reached without convergence, print the outstanding
-findings and exit with status 2. Do not loop forever — the user can
-inspect, decide, and re-push.
+`MAX_ITER = 5` (override with `LOCAL_REVIEW_MAX_ITER=N`). If reached
+without convergence, print the outstanding findings and stop with exit
+status 2. Do not loop forever — the user can inspect, decide, and push
+anyway.
 
 ### 7. Settling the worktree back into the original branch
 
 When converged:
 
-1. In the worktree, delete the loop transcript first — it is scratch
-   state and must never ship: `rm -f HISTORY.md`. Then stage every edit
-   the implementer made: `git add -A`. (Without the delete, `git add -A`
-   would stage `HISTORY.md` and push every review transcript with the
-   branch.)
-2. If the worktree's index is non-empty, amend onto a single fixup
-   commit: `git commit --no-verify -m "fixup! adversarial review
+1. In the worktree, collect the file list the implementer reported
+   touching (the `FIXED <file:line>` lines in `HISTORY.md`), then
+   delete `HISTORY.md` (it's loop scratch, not PR content). Stage
+   exactly the reported files with `git add -- <file>...` — never
+   `git add -A`. Then check for strays among **unstaged and untracked
+   paths only** — the just-staged allowlisted files legitimately show
+   as staged, so a bare `git status --porcelain` would false-positive
+   on a successful fixup:
+
+   ```bash
+   strays=$(git diff --name-only; git ls-files --others --exclude-standard)
+   ```
+
+   If `strays` is non-empty, stop and surface the list to the user
+   instead of staging more; stray agent artifacts must not ride into
+   the commit.
+2. If the worktree's index is non-empty, fold the loop's work into a
+   single commit: `git commit --no-verify -m "fixup! adversarial review
    iteration loop"`. (`--no-verify` is intentional here — pre-commit
    hooks are about *intent*, this commit is a mechanical re-shape of
    the diff the user is about to push.)
@@ -166,30 +185,29 @@ When converged:
 4. If the implementer made no edits in any iteration (clean pass on
    the first reviewer round), skip the fixup commit and the
    fast-forward — nothing to settle.
-5. Print `=== LOCAL REVIEW PASSED — push proceeding ===` and exit 0.
+5. Print `=== LOCAL REVIEW PASSED ===`.
+
+## Outputs
+
+- Exit 0 → converged (or bypassed), branch fast-forwarded if edits were made.
+- Exit 2 → unresolved findings (stable disagreement or iteration cap);
+  the user decides whether to fix by hand or push anyway.
+- Exit non-zero non-2 → setup error (no worktree, no `claude` binary,
+  blocked-active-worktree, etc.).
 
 ## Bypass channels
 
 - `CLAUDE_LOCAL_REVIEW=0` env — skill exits 0 immediately when set.
-  The pre-push hook short-circuits before calling the skill, so this
-  is the fast path.
-- `git push --no-verify` — git skips the pre-push hook entirely, so the
-  skill is never invoked.
-- Skill caller may pass `LOCAL_REVIEW_MAX_ITER=N` to override the cap.
-
-## Outputs
-
-- Exit 0 → converged (or bypassed), push proceeds.
-- Exit 2 → unresolved findings, push aborted, user decides next step.
-- Exit non-zero non-2 → setup error (no worktree, no `claude` binary,
-  etc.) — pre-push hook surfaces with a clear message.
+- `git push --no-verify` — git skips pre-push hooks entirely (there are
+  none wired in this repo today, but the flag is a universal bypass).
+- Caller may pass `LOCAL_REVIEW_MAX_ITER=N` to override the iteration cap.
 
 ## Ground rules
 
 - **Foreground only.** Never `run_in_background`. The user must see
   each iteration as it happens.
-- **The skill does not push.** It returns control to the pre-push
-  hook (or wrapper), which pushes only if the skill exited 0.
+- **The skill does not push.** It leaves the branch ready; the user
+  (or /resolve-my-prs) pushes.
 - **The skill does not post to GitHub.** The matching workflow run
   will still fire on the actual push; this is local-only.
 - **One commit max.** Don't litter the branch with per-iteration
@@ -202,6 +220,5 @@ When converged:
 
 - [.claude/prompts/adversarial_reviewer.md](../../prompts/adversarial_reviewer.md) — reviewer prompt body (single source of truth)
 - [.claude/prompts/adversarial_implementer.md](../../prompts/adversarial_implementer.md) — implementer prompt body
-- [bin/pre_push_claude_review.sh](../../../bin/pre_push_claude_review.sh) — pre-push hook caller
-- [bin/gh-pr-create-with-review.sh](../../../bin/gh-pr-create-with-review.sh) — `gh pr create` wrapper
+- [resolve-my-prs](../resolve-my-prs/SKILL.md) — bulk PR resolution loop that this skill complements
 - [.github/workflows/claude-code-review.yml](../../../.github/workflows/claude-code-review.yml) — the CI workflow this mirrors

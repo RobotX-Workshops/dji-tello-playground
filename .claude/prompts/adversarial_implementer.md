@@ -1,10 +1,7 @@
 # Adversarial Implementer Prompt
 
-Shared by the local pre-push skill ([.claude/skills/local-pr-review/SKILL.md](../skills/local-pr-review/SKILL.md))
-and any future automation that needs the implementer-side stance. The
-stance itself is also summarised in
-[CLAUDE.md](../../CLAUDE.md) "Adversarial Code Review → implementer";
-keep that section a pointer, not a duplicate.
+Shared by the local skill ([.claude/skills/local-pr-review/SKILL.md](../skills/local-pr-review/SKILL.md))
+and any future automation that needs the implementer-side stance.
 
 ---
 
@@ -24,8 +21,8 @@ For every finding, pick exactly one verdict:
    move on.** Record one line: `ALREADY-FIXED <file:line> — see
    <prior fix>`.
 3. **invalid / false positive / by design → push back with evidence.**
-   Cite the exact section of `CLAUDE.md` / `CONTRIBUTING.md` / `AGENTS.md`
-   / `.github/copilot-instructions.md` that supports your position, or
+   Cite the exact section of `AGENTS.md` / `README.md` /
+   `src/object_detection/README.md` that supports your position, or
    the `file:line` of code that disproves the comment. "I disagree" is
    not a reply. Record one line: `PUSH-BACK <file:line> — <one-line
    reason> — <citation>`.
@@ -33,17 +30,21 @@ For every finding, pick exactly one verdict:
 Standing project conventions (these trump reviewer suggestions to the
 contrary):
 
-- Required config fields must NOT have defaults — fail-fast at boot is
-  intentional. Reject "add a default for safety" suggestions on
-  caller-required params.
-- Editing a YAML value: change only the value line. Never strip the
-  surrounding comments.
-- Vehicle dimensions (wheelbase, track, max steering) live in
-  `src/tron_racer_bringup/config/default/description/car.yaml`.
-  Consumer nodes receive them via launch-file param passing, never via
-  literal duplication.
-- Runtime nodes reachable from `car.launch.py` are C++ (rclcpp /
-  ament_cmake). `ament_python` is for off-car tooling only.
+- Commits follow Conventional Commits per `AGENTS.md`.
+- Numbered exercises in `src/example_exercises/` are deliberately
+  self-contained teaching scripts for students. Reject "DRY this across
+  exercises" suggestions when they hurt readability; shared detection
+  logic belongs in `src/object_detection/`, not the other way around.
+- The `sys.path.insert(...)`-before-import pattern at the top of
+  exercises is established repo style — reject "move all imports to the
+  top of the file" findings against it (flake8 E402 is expected there).
+- `DEBUG_MODE` / `NO_TAKEOFF` are module-level flags students edit by
+  hand — reject refactors that turn them into CLI arguments or config
+  files unless the PR is explicitly about that.
+- Drone-safety guards (signal handlers, emergency landing, RC clamping
+  to [-100, 100], takeoff guarded by the mode flags) are load-bearing.
+  A reviewer finding that a change weakens them is almost certainly
+  valid; a reviewer suggestion that would weaken them is invalid.
 - `SUSPECT`-labelled findings still require investigation — but the bar
   for fixing is "I confirmed the smell is real", not "the reviewer
   mentioned it".
@@ -66,5 +67,11 @@ contrary):
 Empty sections: `(none)`. Do not omit a heading.
 
 After this report, the orchestrator will rerun the reviewer over the
-new diff. Convergence = reviewer returns zero `### Blocking` findings
-and you have a recorded verdict on every prior finding.
+new diff. Convergence is decided by the orchestrator (see
+`local-pr-review`): the reviewer returns zero `### Blocking` AND zero
+`### Non-blocking` findings and you have a recorded verdict on every
+prior finding — **including every SUSPECT**. SUSPECT items are
+advisory for the convergence counts, but they never bypass your pass:
+a SUSPECT-only review still gets an implementer iteration that
+investigates and records a verdict for each one before the loop may
+settle.
