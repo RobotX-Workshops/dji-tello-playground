@@ -90,6 +90,25 @@ jobs:
     runs-on: [self-hosted, linux, ARM64, rpi]
     timeout-minutes: 10
     steps:
+      - name: Preflight self-hosted runner prerequisites
+        run: |
+          set -euo pipefail
+          for tool in gh jq; do
+            command -v "$tool" >/dev/null 2>&1 || {
+              echo "::error::required tool '${tool}' missing on self-hosted runner"
+              exit 1
+            }
+          done
+          if ! printf 'x' | grep -qP 'x'; then
+            echo "::error::grep built without PCRE (-P) support, needed by the marker parser"
+            exit 1
+          fi
+          if ! gh api rate_limit >/dev/null 2>&1; then
+            echo "::error::gh cannot reach api.github.com (check outbound HTTPS and auth)"
+            exit 1
+          fi
+          echo "preflight ok: gh=$(gh --version | head -1), jq=$(jq --version | head -1)"
+
       - name: Resolve PR head SHA + fork status
         id: head
         env:
@@ -175,9 +194,12 @@ jobs:
             # --paginate into a single array; without it the jq filter
             # runs per page and run_id could come back multiline once
             # more than one page of runs exists for this SHA.
+            # `--slurp` is mutually exclusive with `--jq` on current `gh`
+            # (the runner rejects combining them with a usage error), so the
+            # pages are slurped into an array and filtered by piping to `jq`.
             run_id=$(gh api --paginate --slurp \
               "repos/${{ github.repository }}/actions/workflows/claude-code-review.yml/runs?head_sha=${SHA}&per_page=10" \
-              --jq '[.[].workflow_runs[]] | sort_by(.created_at) | reverse | .[0].id // empty')
+              | jq -r '[.[].workflow_runs[]] | sort_by(.created_at) | reverse | .[0].id // empty')
           fi
 
           if [[ -z "$run_id" ]]; then
