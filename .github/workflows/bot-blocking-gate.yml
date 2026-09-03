@@ -91,6 +91,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Preflight self-hosted runner prerequisites
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           for tool in gh jq; do
