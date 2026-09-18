@@ -434,6 +434,8 @@ Justify the order briefly (1 short sentence per PR pair).
 
 If any PR ended the run in a blocked state, list it separately at the bottom with the blocker and *do not* include it in the merge order.
 
+**Never merge.** Printing the merge order is the END of the run — the human merges. The workflow's job ends when a PR is merge-ready (no conflicts, required checks green, all review threads resolved): report merge-readiness and a recommended merge order, then hand off to the user. Merging is always a human action. No agent may run `gh pr merge` or merge by any other means — regardless of how the request is phrased (e.g. "resolve all the PRs" means prepare + report, never merge).
+
 ## Ground rules (recap)
 
 - **Outer orchestrator never touches branches.** Enumerate, fan out, collect reports, print merge order. That's it.

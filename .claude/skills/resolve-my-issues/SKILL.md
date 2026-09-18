@@ -22,6 +22,7 @@ This skill is the **outer orchestration**. Per-issue mechanics (auth, pre-push g
 - **Each agent branches from `origin/main`.** Never branch off an unrelated feature branch.
 - **Always `--force-with-lease` if a push ever rewrites history.** Never plain `--force`. (First-pass `git push -u` is non-rewriting and doesn't need `--force-with-lease`.)
 - **Never bypass checks.** No `--no-verify`, no disabling lint rules, no skipping/deleting tests to make CI green. Fix the underlying issue.
+- **Never merge.** The run ends at a ready-for-review PR plus a merge-readiness report — merging is always a human action. No agent may run `gh pr merge` or merge by any other means, regardless of how the request is phrased.
 
 ## Pre-flight (once per invocation, in the outer orchestrator)
 

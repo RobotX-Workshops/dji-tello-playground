@@ -13,6 +13,12 @@ this file plus [AGENTS.md](../../AGENTS.md).
 - Keep local user work isolated by using dedicated git worktrees.
 - Allow multiple PRs to be processed concurrently when the active agent runtime
   supports safe delegation.
+- **Never merge.** The workflow's job ends when a PR is merge-ready (no
+  conflicts, required checks green, all review threads resolved): report
+  merge-readiness and a recommended merge order, then hand off to the
+  user. Merging is always a human action. No agent may run `gh pr merge`
+  or merge by any other means — regardless of how the request is phrased
+  (e.g. "resolve all the PRs" means prepare + report, never merge).
 
 ## Adapter Contract
 
@@ -126,6 +132,14 @@ Use this flow when the user asks to clear all of their open PRs.
 10. Report merge order for unblocked PRs:
     - dependency chains first,
     - then smaller blast radius before larger changes.
+
+    This report is the END of the workflow — **never merge**. The
+    workflow's job ends when a PR is merge-ready (no conflicts, required
+    checks green, all review threads resolved): report merge-readiness
+    and a recommended merge order, then hand off to the user. Merging is
+    always a human action. No agent may run `gh pr merge` or merge by any
+    other means — regardless of how the request is phrased (e.g. "resolve
+    all the PRs" means prepare + report, never merge).
 
 ## Cleanup
 
