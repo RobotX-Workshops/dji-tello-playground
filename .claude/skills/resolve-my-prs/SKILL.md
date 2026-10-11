@@ -51,7 +51,9 @@ Parallel fan-out is the only mode this skill describes. If a user explicitly ask
 4. Pull the work queue using the locked `$ME` scope:
 
    ```bash
-   gh pr list --author "$ME" --state open \
+   # --limit: gh caps gh pr list at 30 by default; set an explicit cap so the
+   # queue is complete (page with --paginate + `jq -s` beyond that).
+   gh pr list --author "$ME" --state open --limit 1000 \
      --json number,title,headRefName,isDraft,mergeable,mergeStateStatus
    ```
 

@@ -75,13 +75,12 @@ Use this flow for a named PR number or PR URL.
 9. Assess every finding critically against the cited code and canonical docs.
 10. Fix valid defects, push back on invalid findings with evidence, and reply
     on every finding before resolving any thread.
-11. Run the repo's local gate before pushing: there is no separate lint/test
-    command here — the gate is `git push` itself, which the pre-push hook
-    (`bin/pre_push_claude_review.sh`) routes through the `local-pr-review`
-    adversarial loop (see
-    [.claude/skills/local-pr-review/SKILL.md](../../.claude/skills/local-pr-review/SKILL.md)).
-    Let that loop run to convergence rather than bypassing it with
-    `--no-verify` or `CLAUDE_LOCAL_REVIEW=0`.
+11. Run the local adversarial review before pushing: invoke the
+    `/local-pr-review` skill (see
+    [.claude/skills/local-pr-review/SKILL.md](../../.claude/skills/local-pr-review/SKILL.md))
+    manually against the branch — this repo has no pre-push hook wiring, so
+    nothing routes `git push` through it automatically. Let that loop run to
+    convergence rather than skipping it.
 12. Before any `--force-with-lease` push, re-fetch `origin/${BRANCH}` and
     confirm it still matches `STARTING_REMOTE_SHA`; if it has moved, someone
     else pushed concurrently — stop and return `blocked-concurrent-push`
@@ -111,7 +110,11 @@ Use this flow when the user asks to clear all of their open PRs.
 2. Enumerate work with:
 
    ```bash
-   gh pr list --author "$ME" --state open \
+   # gh pr list caps output at --limit 30 by default; pass an explicit limit so
+   # the queue is complete. If more than the limit could exist, page with
+   # `--paginate` (JSON array pages must be concatenated with `jq -s`) or read
+   # `totalCount` from the GraphQL search API before dispatching.
+   gh pr list --author "$ME" --state open --limit 1000 \
      --json number,title,headRefName,isDraft,mergeable,mergeStateStatus
    ```
 
@@ -133,13 +136,15 @@ Use this flow when the user asks to clear all of their open PRs.
     - dependency chains first,
     - then smaller blast radius before larger changes.
 
-    This report is the END of the workflow — **never merge**. The
-    workflow's job ends when a PR is merge-ready (no conflicts, required
-    checks green, all review threads resolved): report merge-readiness
-    and a recommended merge order, then hand off to the user. Merging is
-    always a human action. No agent may run `gh pr merge` or merge by any
-    other means — regardless of how the request is phrased (e.g. "resolve
-    all the PRs" means prepare + report, never merge).
+    This report is the END of the workflow — **never merge**. It is
+    delivered only AFTER the [Cleanup](#cleanup) section has completed
+    (worktree/branch reaping and restoration of the orchestrator's starting
+    branch). The workflow's job ends when a PR is merge-ready (no conflicts,
+    required checks green, all review threads resolved): report
+    merge-readiness and a recommended merge order, then hand off to the
+    user. Merging is always a human action. No agent may run `gh pr merge`
+    or merge by any other means — regardless of how the request is phrased
+    (e.g. "resolve all the PRs" means prepare + report, never merge).
 
 ## Cleanup
 
