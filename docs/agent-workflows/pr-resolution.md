@@ -110,12 +110,34 @@ Use this flow when the user asks to clear all of their open PRs.
 2. Enumerate work with:
 
    ```bash
-   # gh pr list caps output at --limit 30 by default; pass an explicit limit so
-   # the queue is complete. If more than the limit could exist, page with
-   # `--paginate` (JSON array pages must be concatenated with `jq -s`) or read
-   # `totalCount` from the GraphQL search API before dispatching.
-   gh pr list --author "$ME" --state open --limit 1000 \
-     --json number,title,headRefName,isDraft,mergeable,mergeStateStatus
+   # gh pr list caps output at --limit N and does not expose totals, so a queue
+   # larger than the limit would silently lose PRs. Page the GraphQL API
+   # instead: flatten every page with `jq -s` and use totalCount as a
+   # completeness check before dispatching.
+   gh api graphql --paginate \
+     -F owner="$OWNER" -F name="$REPO" \
+     -f query='query($owner:String!, $name:String!, $endCursor:String) {
+       repository(owner:$owner, name:$name) {
+         pullRequests(first:100, states:OPEN, after:$endCursor) {
+           totalCount
+           nodes {
+             author { login }
+             number title headRefName isDraft mergeable mergeStateStatus
+           }
+           pageInfo { hasNextPage endCursor }
+         }
+       }
+     }' |
+     jq -s --arg me "$ME" '
+       ([.[].data.repository.pullRequests.nodes[]] | length) as $collected
+       | ([.[].data.repository.pullRequests.totalCount] | last) as $total
+       | if $collected != $total then
+           error("incomplete PR pagination")
+         else
+           [.[].data.repository.pullRequests.nodes[]
+            | select(.author.login == $me)
+            | {number, title, headRefName, isDraft, mergeable, mergeStateStatus}]
+         end'
    ```
 
 3. Filter out drafts unless explicitly requested.
