@@ -192,16 +192,16 @@ jobs:
             # OLDEST run for this SHA, which on a rerun reads stale
             # status/conclusion and can misclassify the skip /
             # in_progress cases.
-            # --slurp collapses the one-JSON-document-per-page output of
-            # --paginate into a single array; without it the jq filter
-            # runs per page and run_id could come back multiline once
+            # `gh api --paginate` emits one JSON document per page; `jq -s`
+            # slurps them into a single array before filtering. We do NOT use
+            # `gh api --slurp` for this: it needs gh >= 2.63.0 and the
+            # self-hosted Pi 4 runners may carry an older gh (the gate dies
+            # with "unknown flag: --slurp"). Without slurping, the jq filter
+            # would run per page and run_id could come back multiline once
             # more than one page of runs exists for this SHA.
-            # `--slurp` is mutually exclusive with `--jq` on current `gh`
-            # (the runner rejects combining them with a usage error), so the
-            # pages are slurped into an array and filtered by piping to `jq`.
-            run_id=$(gh api --paginate --slurp \
+            run_id=$(gh api --paginate \
               "repos/${{ github.repository }}/actions/workflows/claude-code-review.yml/runs?head_sha=${SHA}&per_page=10" \
-              | jq -r '[.[].workflow_runs[]] | sort_by(.created_at) | reverse | .[0].id // empty')
+              | jq -rs '[.[] | .workflow_runs[]] | sort_by(.created_at) | reverse | .[0].id // empty')
           fi
 
           if [[ -z "$run_id" ]]; then
