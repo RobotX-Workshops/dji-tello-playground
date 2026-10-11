@@ -51,11 +51,37 @@ Parallel fan-out is the only mode this skill describes. If a user explicitly ask
 4. Pull the work queue using the locked `$ME` scope:
 
    ```bash
-   gh pr list --author "$ME" --state open \
-     --json number,title,headRefName,isDraft,mergeable,mergeStateStatus
+   # gh pr list caps output at --limit N and does not expose totals, so a queue
+   # larger than the limit would silently lose PRs. Page the GraphQL API
+   # instead: flatten every page with `jq -s` and use totalCount as a
+   # completeness check before dispatching.
+   gh api graphql --paginate \
+     -F owner="$OWNER" -F name="$REPO" \
+     -f query='query($owner:String!, $name:String!, $endCursor:String) {
+       repository(owner:$owner, name:$name) {
+         pullRequests(first:100, states:OPEN, after:$endCursor) {
+           totalCount
+           nodes {
+             author { login }
+             number title headRefName isDraft mergeable mergeStateStatus
+           }
+           pageInfo { hasNextPage endCursor }
+         }
+       }
+     }' |
+     jq -s --arg me "$ME" '
+       ([.[].data.repository.pullRequests.nodes[]] | length) as $collected
+       | ([.[].data.repository.pullRequests.totalCount] | last) as $total
+       | if $collected != $total then
+           error("incomplete PR pagination")
+         else
+           [.[].data.repository.pullRequests.nodes[]
+            | select(.author.login == $me)
+            | {number, title, headRefName, isDraft, mergeable, mergeStateStatus}]
+         end'
    ```
 
-   Filter out drafts. Use `$ME` consistently rather than `@me` — `@me` resolves at request time and could drift if auth context changes mid-run.
+   `$OWNER` / `$REPO` come from step 3's `gh repo view` calls. Use `$ME` consistently rather than `@me` — `@me` resolves at request time and could drift if auth context changes mid-run.
 
 5. Refresh the default branch once up front so rebase targets are fresh:
 
@@ -433,6 +459,8 @@ Once every PR in scope is mergeable, restore your starting branch (`[ "$ORIGINAL
 Justify the order briefly (1 short sentence per PR pair).
 
 If any PR ended the run in a blocked state, list it separately at the bottom with the blocker and *do not* include it in the merge order.
+
+**Never merge.** Printing the merge order is the END of the run — the human merges. The workflow's job ends when a PR is merge-ready (no conflicts, required checks green, all review threads resolved): report merge-readiness and a recommended merge order, then hand off to the user. Merging is always a human action. No agent may run `gh pr merge` or merge by any other means — regardless of how the request is phrased (e.g. "resolve all the PRs" means prepare + report, never merge).
 
 ## Ground rules (recap)
 
